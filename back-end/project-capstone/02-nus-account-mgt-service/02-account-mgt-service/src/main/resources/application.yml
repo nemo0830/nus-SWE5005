@@ -5,15 +5,17 @@ spring:
   profiles:
     active: @activatedProperties@
   datasource:
-    driverClassName: com.mysql.cj.jdbc.Driver
+    driverClassName: org.postgresql.Driver
     # For deployment use
-    url: jdbc:mysql://host_is_ignored/account_service_db?cloudSqlInstance=kianming1988:asia-southeast1:ordermatchingsvc&socketFactory=com.google.cloud.sql.mysql.SocketFactory&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
+    # url: jdbc:mysql://host_is_ignored/account_service_db?cloudSqlInstance=kianming1988:asia-southeast1:ordermatchingsvc&socketFactory=com.google.cloud.sql.mysql.SocketFactory&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
     # For development using VPN connection
     # url: jdbc:mysql://10.32.176.3:3306/account_service_db?characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
-    username: ordermatching
-    password: Team3$
+    # For local development with Docker
+    url: jdbc:postgresql://127.0.0.1:5432/omnitrade_orders?characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
+    username: omnitrade
+    password: omnitrade
     pool:
-      name: order-mysql
+      name: order-postgresql
   jpa:
     hibernate.ddl-auto: update
     generate-ddl: true

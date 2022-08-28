@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.9'
 services:
   elasticmq:
     image: softwaremill/elasticmq-native
@@ -7,17 +7,16 @@ services:
       - '9325:9325'
     volumes:
       - ./docker/volumes/elasticmq/elasticmq.conf:/opt/elasticmq.conf
-  mysql:
-    image: mysql:8
-    cap_add:
-      - SYS_NICE
+  postgresql:
+    image: postgres
     environment:
-      MYSQL_ROOT_PASSWORD: 'Team3$$'
+      POSTGRES_PASSWORD: omnitrade
+      POSTGRES_USER: omnitrade
+      POSTGRES_DB: omnitrade
     ports:
-      - '3306:3306'
+      - "5432:5432"
     volumes:
-      - ./docker/volumes/mysql/init_scripts:/docker-entrypoint-initdb.d
-      - ./docker/volumes/mysql/data:/var/lib/mysql
+      - ./docker/volumes/postgres/data:/var/lib/postgresql/data
   accounts:
     image: maven:3.8-jdk-11
     depends_on:
