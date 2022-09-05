@@ -21,13 +21,13 @@ cloud:
         uri: http://127.0.0.1:9324/000000000000/order_matching_seller_queue.fifo
 
 bs:
-  mysql:
-    driver: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/omnitrade_orders?characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
-    username: root
-    password: Team3$
+  sql:
+    driver: org.postgresql.Driver
+    url: jdbc:postgresql://free-tier6.gcp-asia-southeast1.cockroachlabs.cloud:26257/omnitrade_orders?options=--cluster%3Dswe5005-3145&password=omnitrade&sslmode=prefer&user=omnitrade
+    username: omnitrade
+    password: omnitrade
     pool:
-      name: order-mysql
+      name: omnitrade-orders
 
 management:
   endpoints:

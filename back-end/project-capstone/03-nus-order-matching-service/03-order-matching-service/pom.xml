@@ -35,8 +35,9 @@
         </dependency>
 
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.5.0</version>
         </dependency>
 
         <dependency>
@@ -142,11 +143,6 @@
                     <scope>import</scope>
                 </dependency>
 
-                <dependency>
-                    <groupId>com.google.cloud.sql</groupId>
-                    <artifactId>mysql-socket-factory</artifactId>
-                    <version>1.6.0</version>
-                </dependency>
             </dependencies>
             <build>
                 <plugins>

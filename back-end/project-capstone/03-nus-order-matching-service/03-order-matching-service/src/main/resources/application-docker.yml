@@ -17,13 +17,13 @@ cloud:
         uri: http://elasticmq:9324/000000000000/order_matching_seller_queue.fifo
 
 bs:
-  mysql:
-    driver: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://mysql:3306/omnitrade_orders?characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
-    username: root
-    password: Team3$
+  sql:
+    driver: org.postgresql.Driver
+    url: jdbc:postgresql://127.0.0.1:5432/omnitrade_orders?characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
+    username: omnitrade
+    password: omnitrade
     pool:
-      name: order-mysql
+      name: omnitrade-orders
 
 management:
   endpoints:

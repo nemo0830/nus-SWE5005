@@ -20,22 +20,22 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 public class MysqlConfig {
 
-  @Value("${bs.mysql.driver}")
+  @Value("${bs.sql.driver}")
   private String driverName;
 
-  @Value("${bs.mysql.url}")
+  @Value("${bs.sql.url}")
   private String mysqlUrl;
 
-  @Value("${bs.mysql.username}")
+  @Value("${bs.sql.username}")
   private String mysqlUserName;
 
-  @Value("${bs.mysql.password}")
+  @Value("${bs.sql.password}")
   private String mysqlPassword;
 
-  @Value(value = "${bs.mysql.pool.name}")
+  @Value(value = "${bs.sql.pool.name}")
   private String poolName;
 
-  @Value("${bs.mysql.max.pool.size:8}")
+  @Value("${bs.sql.max.pool.size:8}")
   private int maxPoolSize;
 
   @Bean(name = "mysqlDataSource")
