@@ -8,12 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.aws.messaging.config.annotation.EnableSqs;
 import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.stereotype.Component;
 
 import static com.nus.team3.utils.Utils.constructOrder;
 
 @Component
+@EnableSqs
 public class Subscriber {
 
 	private static final Logger logger = LoggerFactory.getLogger(Subscriber.class);

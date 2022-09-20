@@ -8,22 +8,22 @@ spring:
 cloud:
   aws:
     credentials:
-      access-key: x
-      secret-key: x
+      access-key: <ask vincent for key>
+      secret-key: <ask vincent for key>
     region:
       static: ap-southeast-2
       auto: false
     end-point:
-      service: http://127.0.0.1:9324/
+      service: https://sqs.ap-southeast-2.amazonaws.com
       buyer:
-        uri: http://127.0.0.1:9324/000000000000/order_matching_buyer_queue.fifo
+        uri: https://sqs.ap-southeast-2.amazonaws.com/099209825265/order_matching_buyer_queue.fifo
       seller:
-        uri: http://127.0.0.1:9324/000000000000/order_matching_seller_queue.fifo
+        uri: https://sqs.ap-southeast-2.amazonaws.com/099209825265/order_matching_seller_queue.fifo
 
 bs:
   sql:
     driver: org.postgresql.Driver
-    url: jdbc:postgresql://free-tier6.gcp-asia-southeast1.cockroachlabs.cloud:26257/omnitrade_orders?options=--cluster%3Dswe5005-3145&password=omnitrade&sslmode=prefer&user=omnitrade
+    url: <dummy url>
     username: omnitrade
     password: omnitrade
     pool:
