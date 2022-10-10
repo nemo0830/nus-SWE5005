@@ -56,4 +56,6 @@ jobs:
           key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
           script: |
             cd $DEPLOY_DIRECTORY
+            pwd
+            touch deployment_info.txt
             echo "Commit $SHA deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt
