@@ -17,9 +17,10 @@ jobs:
         run: |
           cd front-end
           npm install
-          npm run build
       - name: Generate build
-        run: npm run build
+        run: |
+          cd front-end
+          npm run build
         # # Disabling CI env var as this is staging workflow
         # env:
         #   CI: false
