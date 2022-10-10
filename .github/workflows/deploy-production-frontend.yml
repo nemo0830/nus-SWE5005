@@ -48,7 +48,8 @@ jobs:
         run: rsync -avzb --backup-dir=$DEPLOY_DIRECTORY../frontend_backup --delete ./ ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }}:$DEPLOY_DIRECTORY
       - name: Timestamping deployment
         run: |
-          ssh ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }} "
-            cd $DEPLOY_DIRECTORY && git fetch && git reset --hard origin/master
-            echo "Commit $SHA deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt
+          ssh ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && git fetch && git reset --hard origin/master \
+            echo "Commit ${{ github.sha }} deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt \
           "
