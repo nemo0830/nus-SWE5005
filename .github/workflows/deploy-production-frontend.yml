@@ -50,6 +50,6 @@ jobs:
         run: |
           ssh ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }} \
           " \
-            cd $DEPLOY_DIRECTORY && git fetch && git reset --hard origin/master \
+            cd $DEPLOY_DIRECTORY \
             echo "Commit ${{ github.sha }} deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt \
           "
