@@ -4,33 +4,55 @@ on:
     branches:
       - production/frontend
 
+env:
+  DEPLOY_DIRECTORY: /mnt/disks/staging-data/react/dashboard/build
+  
 jobs:
-  deploy:
-    permissions:
-      contents: "read"
-      id-token: "write"
-
-    runs-on: "ubuntu-latest"
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: "actions/checkout@v3"
-
-      - name: Install Firebase CLI
-        run: |
-          curl -sL https://firebase.tools | bash
-
-      - name: Set RUNNER_READY env var to true
-        run: echo "RUNNER_READY=true" >> "$GITHUB_ENV"
-
-      - name: Build project
-        if: env.RUNNER_READY == 'true'
+      - name: Clone repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
         run: |
           cd front-end
           npm install
           npm run build
-
-      - name: Deploy Frontend to Firebase Hosting
-        if: env.RUNNER_READY == 'true'
-        run: |
-          cd front-end
-          firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}" --project kianming1988
+      - name: Generate build
+        run: npm run build
+        # # Disabling CI env var as this is staging workflow
+        # env:
+        #   CI: false
+      - name: Share artifact inside workflow
+        uses: actions/upload-artifact@v3
+        with:
+          name: staging-deploy
+          path: build
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: staging-deploy
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          known_hosts: "just-a-placeholder-so-we-dont-get-errors"
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
+      - name: Deploy with rsync
+        run: rsync -avz ./ ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }}:$DEPLOY_DIRECTORY
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
+        env:
+          SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_SSH_USERNAME }}
+          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          script: |
+            cd $DEPLOY_DIRECTORY
+            echo "Commit $SHA deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt
