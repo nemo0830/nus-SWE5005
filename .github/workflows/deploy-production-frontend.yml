@@ -47,7 +47,7 @@ jobs:
       - name: Deploy with rsync
         run: rsync -avzb --backup-dir=$DEPLOY_DIRECTORY../frontend_backup --delete ./ ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }}:$DEPLOY_DIRECTORY
       - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@dce9d565de8d876c11d93fa4fe677c0285a66d78
         env:
           SHA: ${{ github.sha }}
         with:
