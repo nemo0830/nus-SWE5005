@@ -46,16 +46,9 @@ jobs:
         run: ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
       - name: Deploy with rsync
         run: rsync -avzb --backup-dir=$DEPLOY_DIRECTORY../frontend_backup --delete ./ ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }}:$DEPLOY_DIRECTORY
-      - name: executing remote ssh commands using password
-        uses: appleboy/ssh-action@dce9d565de8d876c11d93fa4fe677c0285a66d78
-        env:
-          SHA: ${{ github.sha }}
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_SSH_USERNAME }}
-          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
-          script: |
-            cd $DEPLOY_DIRECTORY
-            pwd
-            touch deployment_info.txt
-            echo "Commit $SHA deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt
+      - name: Timestamping deployment
+        run: |
+          cd $DEPLOY_DIRECTORY
+          pwd
+          touch deployment_info.txt
+          echo "Commit $SHA deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt
