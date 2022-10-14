@@ -15,7 +15,7 @@ public class Order implements Comparable<Order>{
     private String transactionId;
     private String transactionIdAfterMatch;
     private String stockTicker;
-    private int user;
+    private String user;
     private long timestamp;
     private float price;
     private int quantity;
@@ -25,7 +25,7 @@ public class Order implements Comparable<Order>{
         this.buyOrSell = buyOrSell;
         this.transactionId = transactionId;
         this.stockTicker = stockTicker;
-        this.user = Integer.parseInt(user);
+        this.user = user;
         this.timestamp = timestamp;
         this.price = price;
         this.quantity = quantity;
@@ -69,7 +69,7 @@ public class Order implements Comparable<Order>{
         return stockTicker;
     }
 
-    public int getUser() {
+    public String getUser() {
         return user;
     }
 
