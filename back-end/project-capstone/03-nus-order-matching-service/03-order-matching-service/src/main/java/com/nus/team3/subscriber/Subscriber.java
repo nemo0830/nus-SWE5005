@@ -32,6 +32,7 @@ public class Subscriber {
 		logger.info("Message {} Received from order_matching_buyer_queue.fifo", message);
 		Order order = constructOrder(message);
 		if (order != null){
+			logger.info("AUDIT: created_by: [{}], created_at: [{}]", order.getUser(), order.getTimestamp());
 			sqlSessionTemplate.insert(TransactionDao.rootMapperPath + TransactionDao.saveTxnQuery, order);
 			logger.info("Buy order {} successfully persisted to db, proceed to matching.", order.getTransactionId());
 			orderMatchingController.processOrder(order);
@@ -43,6 +44,7 @@ public class Subscriber {
 		logger.info("Message {} Received from order_matching_seller_queue.fifo", message);
 		Order order = constructOrder(message);
 		if (order != null){
+			logger.info("AUDIT: created_by: [{}], created_at: [{}]", order.getUser(), order.getTimestamp());
 			sqlSessionTemplate.insert(TransactionDao.rootMapperPath + TransactionDao.saveTxnQuery, order);
 			logger.info("Sell order {} successfully persisted to db, proceed to matching.", order.getTransactionId());
 			orderMatchingController.processOrder(order);
