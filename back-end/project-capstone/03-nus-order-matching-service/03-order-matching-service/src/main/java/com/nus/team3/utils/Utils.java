@@ -31,7 +31,6 @@ public class Utils {
             int quantity = Integer.parseInt(messageBodyList[2]);
             float price = Float.parseFloat(String.format("%.2f", Double.valueOf(messageBodyList[3])));
             String user = messageBodyList[4];
-            Integer.parseInt(user);
             long timestamp = System.currentTimeMillis();
             String transactionId = Utils.getSaltString();
             if(orderIsValid(side, quantity, price)){
