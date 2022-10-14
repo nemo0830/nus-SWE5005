@@ -32,10 +32,13 @@ class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
-                .antMatchers("/ordermatching/*").permitAll()
+                .antMatchers("/ordermatching/*").hasRole("user_actions")
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/*").hasRole("user_actions")
+                .antMatchers("/transaction/get*").hasRole("admin_actions")
+                .and()
+                .authorizeRequests()
+                .antMatchers("/transaction/save*").hasRole("restricted_actions")
                 .anyRequest()
                 .authenticated();
     }
