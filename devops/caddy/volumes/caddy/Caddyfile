@@ -1,13 +1,13 @@
-https://oauth.omni-trade.xyz:8180 {
+https://oauth.omni-trade.xyz {
 	handle {
-		reverse_proxy keycloak:8080 {
+		reverse_proxy 10.0.0.19:8080 {
 		}
 	}
 }
 
 https://orders.omni-trade.xyz {
         handle {
-                reverse_proxy orders:8080 {
+                reverse_proxy 10.0.0.19:8880 {
                 }
         }
 }
