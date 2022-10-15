@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,6 +48,7 @@ public class Publisher {
 		return "End point test successful ";
 	}
 
+	@PreAuthorize("hasRole('ROLE_user_actions')")
 	@PostMapping("/order")
 	public SendMessageResult sendOrder(@RequestBody String messageBody) {
 		try {
@@ -72,6 +74,7 @@ public class Publisher {
 		return null;
 	}
 
+	@PreAuthorize("hasRole('ROLE_user_actions')")
 	@PostMapping("/cancel")
 	public String cancelOrder(@RequestBody String transactionId) {
 		try{
