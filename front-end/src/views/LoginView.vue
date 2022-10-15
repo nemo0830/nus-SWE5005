@@ -3,31 +3,11 @@
     <v-row align="center" justify="center">
       <v-col>
         <v-card class="mx-auto" max-width="344">
-          <v-card-text>
-            <p class="text-h4 text--primary">Login</p>
-            <v-text-field
-              label="Username"
-              prepend-inner-icon="mdi-account"
-              dense
-              filled
-              v-model="username"
-            ></v-text-field>
-            <v-text-field
-              label="Password"
-              type="password"
-              prepend-inner-icon="mdi-key"
-              dense
-              filled
-              v-model="password"
-            ></v-text-field>
-            <v-divider />
-          </v-card-text>
           <v-card-actions>
             <v-col class="text-center">
-              <v-btn color="cyan accent-4" dark @click="signUp">Sign Up</v-btn>
-            </v-col>
-            <v-col class="text-center">
-              <v-btn color="teal accent-4" dark @click="login">Login</v-btn>
+              <v-btn color="cyan accent-4" dark @click="signUp"
+                >Login / Sign Up</v-btn
+              >
             </v-col>
           </v-card-actions>
         </v-card>
@@ -39,6 +19,7 @@
 <script>
 import axios from "axios";
 import { mapMutations } from "vuex";
+import Keycloak from "keycloak-js";
 
 export default {
   name: "LoginView",
@@ -76,7 +57,59 @@ export default {
       }
     },
     signUp() {
-      this.$router.push("/signup");
+      let initOptions = {
+        url: "https://oauth.omni-trade.xyz/",
+        realm: "IamOrderMatching",
+        clientId: "iam-ordermatching",
+        onLoad: "login-required",
+      };
+
+      let keycloak = Keycloak(initOptions);
+
+      keycloak
+        .init({
+          onLoad: initOptions.onLoad,
+          redirectUri: "http://localhost:8888",
+        })
+        .then((auth) => {
+          if (!auth) {
+            window.location.reload();
+            console.log.info("error");
+          } else {
+            console.log.info("Authenticated");
+            console.log.info("keycloak.token:" + keycloak.token);
+            console.log.info("keycloak.refreshToken" + keycloak.refreshToken);
+            localStorage.setItem("vue-token", keycloak.token);
+            localStorage.setItem("vue-refresh-token", keycloak.refreshToken);
+          }
+
+          //Token Refresh
+          setInterval(() => {
+            keycloak
+              .updateToken(70)
+              .then((refreshed) => {
+                if (refreshed) {
+                  console.log.info("Token refreshed" + refreshed);
+                } else {
+                  console.log.warn(
+                    "Token not refreshed, valid for " +
+                      Math.round(
+                        keycloak.tokenParsed.exp +
+                          keycloak.timeSkew -
+                          new Date().getTime() / 1000
+                      ) +
+                      " seconds"
+                  );
+                }
+              })
+              .catch(() => {
+                console.log.error("Failed to refresh token");
+              });
+          }, 6000);
+        })
+        .catch(() => {
+          console.log.error("Authenticated Failed");
+        });
     },
   },
 };
