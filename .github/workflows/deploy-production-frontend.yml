@@ -46,9 +46,9 @@ jobs:
           ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }} \
           " \
             sudo mkdir -p $DEPLOY_DIRECTORY && \
-            sudo chown -R 1001:1001 $DEPLOY_DIRECTORY && \
-            sudo chmod 775 -R $DEPLOY_DIRECTORY && \
-            sudo mkdir -p $DEPLOY_DIRECTORY/../backup/frontend/${{ github.sha }} \
+            sudo mkdir -p $DEPLOY_DIRECTORY/../backup/frontend/${{ github.sha }} && \
+            sudo chown -R 1001:1001 $DEPLOY_DIRECTORY/../ && \
+            sudo chmod 775 -R $DEPLOY_DIRECTORY/../ \
           "
           rsync -avzb --backup-dir=$DEPLOY_DIRECTORY/../backup/frontend/${{ github.sha }} --delete ./ ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }}:$DEPLOY_DIRECTORY
       - name: Timestamping deployment
