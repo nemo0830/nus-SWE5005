@@ -12,4 +12,4 @@ services:
       - ./volumes/caddy/config:/config
       - ./volumes/caddy/Caddyfile:/etc/caddy/Caddyfile
       - ./volumes/caddy/data:/data
-      - ../deploy/frontend:/usr/share/caddy
+      - ../../deploy/frontend:/usr/share/caddy
