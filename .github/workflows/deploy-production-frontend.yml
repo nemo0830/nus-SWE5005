@@ -21,9 +21,6 @@ jobs:
         run: |
           cd front-end
           npm run build
-        # # Disabling CI env var as this is staging workflow
-        # env:
-        #   CI: false
       - name: Share artifact inside workflow
         uses: actions/upload-artifact@v3
         with:
@@ -40,21 +37,21 @@ jobs:
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
           known_hosts: "just-a-placeholder-so-we-dont-get-errors"
       - name: Adding Known Hosts
-        run: ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H ${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }} >> ~/.ssh/known_hosts
       - name: Deploy with rsync
         run: |
-          ssh ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }} \
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }} \
           sudo mkdir -p $DEPLOY_DIRECTORY && \
           sudo chown -R 1001:1001 $DEPLOY_DIRECTORY && \
           sudo chmod 775 -R $DEPLOY_DIRECTORY && \
           sudo mkdir -p $DEPLOY_DIRECTORY/backup/frontend/${{ github.sha }}
-          rsync -avzb --backup-dir=$DEPLOY_DIRECTORY/backup/frontend/${{ github.sha }} --delete ./ ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }}:$DEPLOY_DIRECTORY
+          rsync -avzb --backup-dir=$DEPLOY_DIRECTORY/backup/frontend/${{ github.sha }} --delete ./ ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }}:$DEPLOY_DIRECTORY
       - name: Timestamping deployment
         run: |
-          ssh ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }} \
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }} \
           " \
             cd $DEPLOY_DIRECTORY && \
             echo "Commit ${{ github.sha }} deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt \
