@@ -6,13 +6,17 @@ import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurer
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
 @KeycloakConfiguration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     // Submits the KeycloakAuthenticationProvider to the AuthenticationManager
     @Autowired
@@ -32,14 +36,7 @@ class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
-                .antMatchers("/ordermatching/*").hasRole("user_actions")
-                .and()
-                .authorizeRequests()
-                .antMatchers("/transaction/get*").hasRole("admin_actions")
-                .and()
-                .authorizeRequests()
-                .antMatchers("/transaction/save*").hasRole("restricted_actions")
-                .anyRequest()
-                .authenticated();
+                .antMatchers("/api/*")
+                .permitAll();
     }
 }

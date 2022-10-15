@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,26 +31,31 @@ public class TransactionDao {
     @Qualifier("mysqlSqlSessionTemplate")
     private SqlSessionTemplate sqlSessionTemplate;
 
+    @PreAuthorize("hasRole('ROLE_admin_actions')")
     @GetMapping("/getAllTxnHist")
     public List<Order> getAllTransactionHistories(){
         return sqlSessionTemplate.selectList(rootMapperPath + selectAllQuery);
     }
 
+    @PreAuthorize("hasRole('ROLE_admin_actions')")
     @GetMapping("/getAllUnmatched")
     public List<Order> getAllUnmatchedOrderInQueue(){
         return sqlSessionTemplate.selectList(rootMapperPath + selectAllUnmatchedQuery);
     }
 
+    @PreAuthorize("hasRole('ROLE_admin_actions')")
     @PostMapping("/getTxn")
     public List<Order> getTransaction(@RequestBody String transactionId){
         return sqlSessionTemplate.selectList(rootMapperPath + selectSingleTxnQuery, transactionId);
     }
 
+    @PreAuthorize("hasRole('ROLE_admin_actions')")
     @PostMapping("/getMatchedTxn")
     public List<Order> getMatchedTransaction(@RequestBody String transactionId){
         return sqlSessionTemplate.selectList(rootMapperPath + selectSingleMatchedTxnQuery, transactionId);
     }
 
+    @PreAuthorize("hasRole('ROLE_restricted_actions')")
     @PostMapping("/saveTxn")
     public int saveTransaction(@RequestBody String messageBody) {
         String[] messageBodyList = messageBody.split("#");
