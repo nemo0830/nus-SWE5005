@@ -48,8 +48,8 @@ jobs:
         run: |
           ssh ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }} \
           sudo mkdir -p $DEPLOY_DIRECTORY && \
-          sudo chown -R ${{ secrets.STAGING_SSH_USERNAME }}:${{ secrets.STAGING_SSH_USERNAME }} $DEPLOY_DIRECTORY \
-          sudo chmod 775 -R ${{ secrets.STAGING_SSH_USERNAME }}:${{ secrets.STAGING_SSH_USERNAME }} $DEPLOY_DIRECTORY \
+          sudo chown -R ${{ secrets.STAGING_SSH_USERNAME }}:${{ secrets.STAGING_SSH_USERNAME }} $DEPLOY_DIRECTORY && \
+          sudo chmod 775 -R ${{ secrets.STAGING_SSH_USERNAME }}:${{ secrets.STAGING_SSH_USERNAME }} $DEPLOY_DIRECTORY && \
           sudo mkdir -p $DEPLOY_DIRECTORY/backup/frontend/${{ github.sha }} && \
           rsync -avzb --backup-dir=$DEPLOY_DIRECTORY/backup/frontend/${{ github.sha }} --delete ./ ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }}:$DEPLOY_DIRECTORY
       - name: Timestamping deployment
