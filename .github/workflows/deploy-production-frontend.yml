@@ -45,7 +45,11 @@ jobs:
       - name: Adding Known Hosts
         run: ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
       - name: Deploy with rsync
-        run: rsync -avzb --backup-dir=$DEPLOY_DIRECTORY/backup/frontend/${{ github.sha }} --delete ./ ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }}:$DEPLOY_DIRECTORY
+        run: |
+          ssh ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }} \
+          sudo mkdir -p $DEPLOY_DIRECTORY && \
+          sudo mkdir -p $DEPLOY_DIRECTORY/backup/frontend/${{ github.sha }}
+          rsync -avzb --backup-dir=$DEPLOY_DIRECTORY/backup/frontend/${{ github.sha }} --delete ./ ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }}:$DEPLOY_DIRECTORY
       - name: Timestamping deployment
         run: |
           ssh ${{ secrets.STAGING_SSH_USERNAME }}@${{ secrets.STAGING_HOST }} \
