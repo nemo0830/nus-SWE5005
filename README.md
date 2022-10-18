@@ -1,15 +1,16 @@
 # Omni Trade Application
 
 This project is part of the final assignment submission for the Graduate
-Certificate in Architecting Scalable Systems
+Certificate in Securing Ubiquitous Systems
 
 ## The Tech Stack™
 
 ### Backend
 
-- [Spring Boot](https://spring.io/) for Orders and Accounts Service
+- [Spring Boot](https://spring.io/) for Orders Service
 - [Helidon SE](https://helidon.io/) for Forums Service
-- [MySQL](https://www.mysql.com/) for Database
+- [Keycloak](https://www.keycloak.org/) for OAuth 2.0
+- [PostgreSQL](https://www.postgresql.org/) for Database
 - [ElasticMQ](https://github.com/softwaremill/elasticmq) as a replacement of AWS
   SQS for local development/vendor-neutral configuration
 
@@ -17,13 +18,19 @@ Certificate in Architecting Scalable Systems
 
 - [VueJS](https://vuejs.org/)
 
+### Supporting Applications
+
+- [Caddy Server](https://caddyserver.com/) for TLS provisioning, termination and
+free certificate issuance
+
 ### Cloud Platforms and Infrastructure
 
 - AWS SQS
-- Firebase Hosting
+- CockroachDB Serverless
+- Cloudflare DNS
 - GitHub Actions
-- Google App Engine
-- Google Cloud SQL
+- Oracle Cloud
+- Postmark E-Mail Service
 
 ## Development Setup
 
@@ -45,10 +52,6 @@ extension is required.
 
 - [Node.js v16 LTS](https://nodejs.org/en/download/)
 - [Vue CLI](https://cli.vuejs.org/)
-
-### DevOps and Deployment (optional)
-
-- [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
 
 ## Development Loop
 
