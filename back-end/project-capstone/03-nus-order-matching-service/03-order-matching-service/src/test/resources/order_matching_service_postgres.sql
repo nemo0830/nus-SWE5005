@@ -1,7 +1,7 @@
 drop table if exists transaction_history_tab;
 CREATE TABLE transaction_history_tab (
     id SERIAL,
-    user_id  varchar(255) NOT null,
+    user_id bigint DEFAULT null,
     stock_ticker varchar(255) NOT null,
     side varchar(5) NOT null,
     price float NOT NULL,
@@ -12,15 +12,15 @@ CREATE TABLE transaction_history_tab (
     create_time bigint DEFAULT NULL
 );
 
-INSERT INTO transaction_history_tab VALUES (1,'3','MSFT','BUY',101,2,'UNMATCHED','oweyf9923',NULL,1649238459);
-INSERT INTO transaction_history_tab VALUES (2,'1','MSFT','SELL',100,3,'UNMATCHED','hdgf732772',NULL,1649238460);
-INSERT INTO transaction_history_tab VALUES (3,'3','MSFT','BUY',101,2,'MATCHED','oweyf9923','wds87f68w',1649238459);
-INSERT INTO transaction_history_tab VALUES (4,'1','MSFT','SELL',101,2,'MATCHED','hdgf732772','wds87f68w',1649238460);
-INSERT INTO transaction_history_tab VALUES (5,'1','MSFT','SELL',101,1,'UNMATCHED','hdgf732772',NULL,1649238460);
-INSERT INTO transaction_history_tab VALUES (6, '3', 'MSFT', 'SELL', 110, 2, 'MATCHED','des',NULL,1649238460);
-INSERT INTO transaction_history_tab VALUES (7, '3', 'MSFT', 'BUY', 102, 3, 'MATCHED','des',NULL,1649238460);
-INSERT INTO transaction_history_tab VALUES (8, '3', 'SE', 'BUY', 150, 2, 'MATCHED','des2',NULL,1649238460);
-INSERT INTO transaction_history_tab VALUES (9, '3', 'SE', 'SELL', 120, 1, 'MATCHED','des2',NULL,1649238460);
+INSERT INTO transaction_history_tab VALUES (1,3,'MSFT','BUY',101,2,'UNMATCHED','oweyf9923',NULL,1649238459);
+INSERT INTO transaction_history_tab VALUES (2,1,'MSFT','SELL',100,3,'UNMATCHED','hdgf732772',NULL,1649238460);
+INSERT INTO transaction_history_tab VALUES (3,3,'MSFT','BUY',101,2,'MATCHED','oweyf9923','wds87f68w',1649238459);
+INSERT INTO transaction_history_tab VALUES (4,1,'MSFT','SELL',101,2,'MATCHED','hdgf732772','wds87f68w',1649238460);
+INSERT INTO transaction_history_tab VALUES (5,1,'MSFT','SELL',101,1,'UNMATCHED','hdgf732772',NULL,1649238460);
+INSERT INTO transaction_history_tab VALUES (6, 3, 'MSFT', 'SELL', 110, 2, 'MATCHED','des',NULL,1649238460);
+INSERT INTO transaction_history_tab VALUES (7, 3, 'MSFT', 'BUY', 102, 3, 'MATCHED','des',NULL,1649238460);
+INSERT INTO transaction_history_tab VALUES (8, 3, 'SE', 'BUY', 150, 2, 'MATCHED','des2',NULL,1649238460);
+INSERT INTO transaction_history_tab VALUES (9, 3, 'SE', 'SELL', 120, 1, 'MATCHED','des2',NULL,1649238460);
 
 drop table if exists stock_live_tab;
 CREATE TABLE stock_live_tab (
