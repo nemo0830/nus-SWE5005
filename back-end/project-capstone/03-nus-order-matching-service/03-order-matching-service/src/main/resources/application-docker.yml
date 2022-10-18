@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8880
 
 cloud:
   aws:
@@ -30,3 +30,10 @@ management:
     web:
       exposure:
         include: "*"
+
+keycloak:
+  auth-server-url: https://oauth.omni-trade.xyz:8180
+  principal-attribute: preferred_username
+  realm: IamOrderMatching
+  public-client: 'true'
+  resource: iam-ordermatching
