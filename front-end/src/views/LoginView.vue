@@ -58,18 +58,18 @@ export default {
     },
     signUp() {
       let initOptions = {
-        url: "https://oauth.omni-trade.xyz/",
+        url: `${process.env.VUE_APP_ENDPOINT_ACCOUNTS}`,
         realm: "IamOrderMatching",
         clientId: "iam-ordermatching",
         onLoad: "login-required",
       };
 
-      let keycloak = Keycloak(initOptions);
+      let keycloak = new Keycloak(initOptions);
 
       keycloak
         .init({
           onLoad: initOptions.onLoad,
-          redirectUri: "http://localhost:8888",
+          redirectUri: `${process.env.VUE_APP_ENDPOINT_OAUTH_REDIRECT_URI}`,
         })
         .then((auth) => {
           if (!auth) {
