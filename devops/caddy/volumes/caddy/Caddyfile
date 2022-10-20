@@ -13,7 +13,9 @@ https://orders.omni-trade.xyz {
 }
 
 https://www.omni-trade.xyz {
-        file_server {
-                root /usr/share/caddy
+        handle {
+                root * /usr/share/caddy
+                try_files {path} /index.html
+                file_server
         }
 }

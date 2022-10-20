@@ -7,6 +7,7 @@ services:
       - TZ=Asia/Singapore
     ports:
       - 443:443
+      # - 80:80
     volumes:
       - ./volumes/caddy/config:/config
       - ./volumes/caddy/Caddyfile:/etc/caddy/Caddyfile
