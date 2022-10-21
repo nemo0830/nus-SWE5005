@@ -3,6 +3,7 @@ package com.nus.team3.publisher;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
+import com.nus.team3.aop.AesRsaDecrypt;
 import com.nus.team3.constants.TradeEnum;
 import com.nus.team3.dto.Order;
 import com.nus.team3.model.MasterPool;
@@ -48,10 +49,13 @@ public class Publisher {
 		return "End point test successful ";
 	}
 
+	@AesRsaDecrypt
 	@PreAuthorize("hasRole('ROLE_user_actions')")
 	@PostMapping("/order")
 	public SendMessageResult sendOrder(@RequestBody String messageBody) {
 		try {
+			logger.info("received " + messageBody);
+
 			String[] messageBodyList = messageBody.split("#");
 			if (messageBodyList.length != 5 ||
 					(!messageBodyList[0].equalsIgnoreCase(TradeEnum.SIDE.BUY.name()) &&
