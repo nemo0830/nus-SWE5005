@@ -37,3 +37,11 @@ keycloak:
   realm: IamOrderMatching
   public-client: 'true'
   resource: iam-ordermatching
+  use-resource-role-mappings : false
+  bearer-only: true
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

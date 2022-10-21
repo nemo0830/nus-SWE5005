@@ -50,7 +50,6 @@ public class Publisher {
 	}
 
 	@AesRsaDecrypt
-	@PreAuthorize("hasRole('ROLE_user_actions')")
 	@PostMapping("/order")
 	public SendMessageResult sendOrder(@RequestBody String messageBody) {
 		try {
@@ -78,7 +77,6 @@ public class Publisher {
 		return null;
 	}
 
-	@PreAuthorize("hasRole('ROLE_user_actions')")
 	@PostMapping("/cancel")
 	public String cancelOrder(@RequestBody String transactionId) {
 		try{

@@ -36,11 +36,13 @@ management:
         include: "*"
 
 keycloak:
-  auth-server-url: https://oauth.omni-trade.xyz:8180
+  auth-server-url: https://oauth.omni-trade.xyz
   principal-attribute: preferred_username
   realm: IamOrderMatching
   public-client: 'true'
   resource: iam-ordermatching
+  use-resource-role-mappings : false
+  bearer-only: true
 
 logging:
   level:
