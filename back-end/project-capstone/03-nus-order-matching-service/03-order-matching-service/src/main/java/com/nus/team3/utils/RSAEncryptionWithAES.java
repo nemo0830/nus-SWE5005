@@ -1,0 +1,149 @@
+package com.nus.team3.utils;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.security.*;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
+// Java 8 example for RSA-AES encryption/decryption.
+// Uses strong encryption with 2048 key size.
+public class RSAEncryptionWithAES {
+
+    public static void main(String[] args) throws Exception {
+        String plainText = "buy#MSFT#1#101.2#777";
+
+        // Generate public and private keys using RSA
+//        Map<String, Object> keys = getRSAKeys();
+//        PrivateKey privateKey = (PrivateKey) keys.get("private");
+//        PublicKey publicKey = (PublicKey) keys.get("public");
+
+// Save private key & public key
+//        try (FileOutputStream fos = new FileOutputStream("public.key")) {
+//            fos.write(publicKey.getEncoded());
+//        }
+//        try (FileOutputStream fos1 = new FileOutputStream("private.key")) {
+//            fos1.write(privateKey.getEncoded());
+//        }
+
+        PublicKey publicKey = getPublicKey();
+        PrivateKey privateKey = getPrivateKey();
+
+        // First create an AES Key
+//        String secretAESKeyString = getSecretAESKeyAsString();
+        String secretAESKeyString = "2oilpo4azs1wZtnpiiAgHw==";
+
+        // Encrypt our data with AES key
+        String encryptedText = encryptTextUsingAES(plainText, secretAESKeyString);
+        System.out.println("encryptedText :" + encryptedText);
+
+        // Encrypt AES Key with RSA public Key
+        String encryptedAESKeyString = encryptAESKey(secretAESKeyString, publicKey);
+        System.out.println("encryptedAESKeyString Key:" + encryptedAESKeyString);
+
+        // The following logic is on the other side.
+
+        // First decrypt the AES Key with RSA private key
+        String decryptedAESKeyString = decryptAESKey(encryptedAESKeyString, privateKey);
+
+        // Now decrypt data using the decrypted AES key!
+        String decryptedText = decryptTextUsingAES(encryptedText, decryptedAESKeyString);
+
+        System.out.println("input:" + plainText);
+        System.out.println("AES Key:" + secretAESKeyString);
+        System.out.println("decrypted:" + decryptedText);
+
+    }
+
+    public static PublicKey getPublicKey() throws Exception {
+
+        File publicKeyFile = new File("KeyPair/publicKey");
+        byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+        return keyFactory.generatePublic(publicKeySpec);
+    }
+
+    public static PrivateKey getPrivateKey() throws Exception {
+
+        File privateKeyFile = new File("KeyPair/privateKey");
+        byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
+        KeyFactory keyFactory2 = KeyFactory.getInstance("RSA");
+        EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        return keyFactory2.generatePrivate(privateKeySpec);
+    }
+
+    // Create a new AES key. Uses 128 bit (weak)
+    public static String getSecretAESKeyAsString() throws Exception {
+        KeyGenerator generator = KeyGenerator.getInstance("AES");
+        generator.init(128); // The AES key size in number of bits
+        SecretKey secKey = generator.generateKey();
+        String encodedKey = Base64.getEncoder().encodeToString(secKey.getEncoded());
+        return encodedKey;
+    }
+
+    // Encrypt text using AES key
+    public static String encryptTextUsingAES(String plainText, String aesKeyString) throws Exception {
+        byte[] decodedKey = Base64.getDecoder().decode(aesKeyString);
+        SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+
+        // AES defaults to AES/ECB/PKCS5Padding in Java 7
+        Cipher aesCipher = Cipher.getInstance("AES");
+        aesCipher.init(Cipher.ENCRYPT_MODE, originalKey);
+        byte[] byteCipherText = aesCipher.doFinal(plainText.getBytes());
+        return Base64.getEncoder().encodeToString(byteCipherText);
+    }
+
+    // Decrypt text using AES key
+    public static String decryptTextUsingAES(String encryptedText, String aesKeyString) throws Exception {
+
+        byte[] decodedKey = Base64.getDecoder().decode(aesKeyString);
+        SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+
+        // AES defaults to AES/ECB/PKCS5Padding in Java 7
+        Cipher aesCipher = Cipher.getInstance("AES");
+        aesCipher.init(Cipher.DECRYPT_MODE, originalKey);
+        byte[] bytePlainText = aesCipher.doFinal(Base64.getDecoder().decode(encryptedText));
+        return new String(bytePlainText);
+    }
+
+    // Get RSA keys. Uses key size of 2048.
+    private static Map<String, Object> getRSAKeys() throws Exception {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        PrivateKey privateKey = keyPair.getPrivate();
+        PublicKey publicKey = keyPair.getPublic();
+
+        Map<String, Object> keys = new HashMap<String, Object>();
+        keys.put("private", privateKey);
+        keys.put("public", publicKey);
+        return keys;
+    }
+
+    // Decrypt AES Key using RSA public key
+    public static String decryptAESKey(String encryptedAESKey, PrivateKey privateKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        return new String(cipher.doFinal(Base64.getDecoder().decode(encryptedAESKey)));
+    }
+
+    // Encrypt AES Key using RSA private key
+    public static String encryptAESKey(String plainAESKey, PublicKey publicKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        return Base64.getEncoder().encodeToString(cipher.doFinal(plainAESKey.getBytes()));
+    }
+
+}
