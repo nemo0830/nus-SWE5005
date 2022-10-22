@@ -1,16 +1,15 @@
 package com.nus.team3.utils;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.EncodedKeySpec;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -22,7 +21,6 @@ import java.util.Map;
 public class RSAEncryptionWithAES {
 
     public static void main(String[] args) throws Exception {
-        String plainText = "buy#MSFT#1#101.2#777";
 
         // Generate public and private keys using RSA
 //        Map<String, Object> keys = getRSAKeys();
@@ -30,16 +28,18 @@ public class RSAEncryptionWithAES {
 //        PublicKey publicKey = (PublicKey) keys.get("public");
 
 // Save private key & public key
-//        try (FileOutputStream fos = new FileOutputStream("public.key")) {
+//        try (FileOutputStream fos = new FileOutputStream("frontEndPublicKey")) {
 //            fos.write(publicKey.getEncoded());
 //        }
-//        try (FileOutputStream fos1 = new FileOutputStream("private.key")) {
+//        try (FileOutputStream fos1 = new FileOutputStream("frontEndPivateKey")) {
 //            fos1.write(privateKey.getEncoded());
 //        }
 
-        PublicKey publicKey = getPublicKey();
-        PrivateKey privateKey = getPrivateKey();
+        String plainText = "buy#MSFT#1#101.2#777";
+        PublicKey backendPublicKey = getPublicKey();
+        PrivateKey backendPrivateKey = getPrivateKey();
 
+        // MESSAGE CONFIDENTIALITY FLOW
         // First create an AES Key
 //        String secretAESKeyString = getSecretAESKeyAsString();
         String secretAESKeyString = "2oilpo4azs1wZtnpiiAgHw==";
@@ -49,13 +49,13 @@ public class RSAEncryptionWithAES {
         System.out.println("encryptedText :" + encryptedText);
 
         // Encrypt AES Key with RSA public Key
-        String encryptedAESKeyString = encryptAESKey(secretAESKeyString, publicKey);
+        String encryptedAESKeyString = encryptUsingPublicKey(secretAESKeyString, backendPublicKey);
         System.out.println("encryptedAESKeyString Key:" + encryptedAESKeyString);
 
         // The following logic is on the other side.
 
         // First decrypt the AES Key with RSA private key
-        String decryptedAESKeyString = decryptAESKey(encryptedAESKeyString, privateKey);
+        String decryptedAESKeyString = decryptUsingPrivateKey(encryptedAESKeyString, backendPrivateKey);
 
         // Now decrypt data using the decrypted AES key!
         String decryptedText = decryptTextUsingAES(encryptedText, decryptedAESKeyString);
@@ -64,6 +64,45 @@ public class RSAEncryptionWithAES {
         System.out.println("AES Key:" + secretAESKeyString);
         System.out.println("decrypted:" + decryptedText);
 
+        // PROOF OF ORIGIN FLOW
+        // Frontend
+        // 1) hash and encrypt payload
+        String messageDigest = DigestUtils.sha256Hex(plainText);
+
+        // 2) encrypt using frontend private key
+        PrivateKey frontEndPrivateKey = getFrontEndPrivateKey();
+        String encryptedMessageDigest = encryptUsingPrivateKey(messageDigest, frontEndPrivateKey);
+        System.out.println("encryptedMessageDigest: " + encryptedMessageDigest);
+
+        // Try Proof of origin
+        // 1) Received payload
+        String sha256hexReceivedCalculated = DigestUtils.sha256Hex(decryptedText);
+        System.out.println("sha256hexReceivedCalculated: " + sha256hexReceivedCalculated);
+
+        // 2) Decrypt encrypted message digest from header using frontend public key
+        PublicKey frontEndPublicKey = getFrontEndPublicKey();
+        String decryptedMessageDigest = decryptUsingPublicKey(encryptedMessageDigest, frontEndPublicKey);
+        System.out.println("decryptedMessageDigest: " + decryptedMessageDigest);
+
+        System.out.println("sha256hexReceivedCalculated.equals(decryptedMessageDigest): " + sha256hexReceivedCalculated.equals(decryptedMessageDigest));
+    }
+
+    public static PublicKey getFrontEndPublicKey() throws Exception {
+
+        File publicKeyFile = new File("KeyPair/frontEndPublicKey");
+        byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+        return keyFactory.generatePublic(publicKeySpec);
+    }
+
+    public static PrivateKey getFrontEndPrivateKey() throws Exception {
+
+        File privateKeyFile = new File("KeyPair/frontEndPrivateKey");
+        byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
+        KeyFactory keyFactory2 = KeyFactory.getInstance("RSA");
+        EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        return keyFactory2.generatePrivate(privateKeySpec);
     }
 
     public static PublicKey getPublicKey() throws Exception {
@@ -132,18 +171,30 @@ public class RSAEncryptionWithAES {
         return keys;
     }
 
-    // Decrypt AES Key using RSA public key
-    public static String decryptAESKey(String encryptedAESKey, PrivateKey privateKey) throws Exception {
+    public static String decryptUsingPrivateKey(String message, PrivateKey privateKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return new String(cipher.doFinal(Base64.getDecoder().decode(encryptedAESKey)));
+        return new String(cipher.doFinal(Base64.getDecoder().decode(message)));
+    }
+
+    // Decrypt AES Key using RSA public key
+    public static String decryptUsingPublicKey(String message, PublicKey publicKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, publicKey);
+        return new String(cipher.doFinal(Base64.getDecoder().decode(message)));
     }
 
     // Encrypt AES Key using RSA private key
-    public static String encryptAESKey(String plainAESKey, PublicKey publicKey) throws Exception {
+    public static String encryptUsingPrivateKey(String message, PrivateKey privateKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, privateKey);
+        return Base64.getEncoder().encodeToString(cipher.doFinal(message.getBytes()));
+    }
+
+    public static String encryptUsingPublicKey(String message, PublicKey publicKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return Base64.getEncoder().encodeToString(cipher.doFinal(plainAESKey.getBytes()));
+        return Base64.getEncoder().encodeToString(cipher.doFinal(message.getBytes()));
     }
 
 }
