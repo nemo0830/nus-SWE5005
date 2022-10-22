@@ -8,10 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.nus.team3.utils.RSAEncryptionWithAES.*;
 
@@ -30,7 +28,7 @@ public class DecryptInterceptor {
                 .requireNonNull(RequestContextHolder
                         .getRequestAttributes())).getRequest();
         String encryptedAESKeyString = request.getHeader("aes-key");
-        String decryptedAESKeyString = decryptAESKey(encryptedAESKeyString, getPrivateKey());
+        String decryptedAESKeyString = decryptUsingPrivateKey(encryptedAESKeyString, getPrivateKey());
 
         String decryptedText = decryptTextUsingAES(encryptedText, decryptedAESKeyString);
 
