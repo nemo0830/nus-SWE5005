@@ -29,6 +29,16 @@ class APIProvider {
       params: query,
     });
   }
+
+  submitOrder({ side, ticker, amount, price, userId }) {
+    return this.#http.post(
+      `${process.env.VUE_APP_ENDPOINT_ORDERS}/ordermatching/order`,
+      `${side}#${ticker}#${amount}#${price}#${userId}`,
+      {
+        headers: { "Content-Type": "text/plain" },
+      }
+    );
+  }
 }
 
 export default new APIProvider({

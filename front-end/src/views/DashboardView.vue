@@ -133,15 +133,15 @@ export default {
 
       console.log(`[submitOrder] ${side} ${amount}x${ticker} @ ${price}...`);
 
-      let result = await this.$api.post(
-        `${process.env.VUE_APP_ENDPOINT_ORDERS}/ordermatching/order`,
-        `${side}#${ticker}#${amount}#${price}#${userId}`,
-        {
-          headers: {
-            "Content-Type": "text/plain",
-          },
-        }
-      );
+      let tradeOrder = {
+        side: side,
+        ticker: ticker,
+        amount: amount,
+        price: price,
+        userId: userId,
+      };
+
+      let result = await this.$api.submitOrder(tradeOrder);
 
       this.isLoading = false;
       this.isTradeDialogVisible = false;
