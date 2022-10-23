@@ -90,13 +90,9 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "DashboardView",
-  components: {
-    // HelloWorld,
-  },
+  components: {},
   data: () => ({
     stocksList: [],
     cards: [],
@@ -110,7 +106,7 @@ export default {
   },
   methods: {
     async getStocksList() {
-      let result = await axios.get(
+      let result = await this.$api.get(
         `${process.env.VUE_APP_ENDPOINT_ORDERS}/api/stocklive`
       );
       if (result.status === 200) {
@@ -137,7 +133,7 @@ export default {
 
       console.log(`[submitOrder] ${side} ${amount}x${ticker} @ ${price}...`);
 
-      let result = await axios.post(
+      let result = await this.$api.post(
         `${process.env.VUE_APP_ENDPOINT_ORDERS}/ordermatching/order`,
         `${side}#${ticker}#${amount}#${price}#${userId}`,
         {
