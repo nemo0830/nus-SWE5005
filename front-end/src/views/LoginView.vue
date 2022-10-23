@@ -24,15 +24,12 @@
 </template>
 
 <script>
-import axios from "axios";
 import { mapMutations } from "vuex";
 import Keycloak from "keycloak-js";
 
 export default {
   name: "LoginView",
-  components: {
-    // HelloWorld,
-  },
+  components: {},
   data() {
     return {
       email: null,
@@ -60,11 +57,15 @@ export default {
         } else {
           console.info("Authenticated");
           console.info(this.keycloak.tokenParsed);
-          console.info("keycloak.token:" + this.keycloak.token);
-          console.info("keycloak.refreshToken" + this.keycloak.refreshToken);
-          // localStorage.setItem("vue-token", this.keycloak.token);
-          // localStorage.setItem("vue-refresh-token", this.keycloak.refreshToken);
+          // console.info("keycloak.token:" + this.keycloak.token);
+          // console.info("keycloak.refreshToken" + this.keycloak.refreshToken);
+          this.saveUserData({
+            token: this.keycloak.token,
+            refreshToken: this.keycloak.refreshToken,
+          });
           this.email = this.keycloak.tokenParsed.email;
+          this.$api.setAuthToken(this.keycloak.token);
+          this.$router.push("/dashboard");
         }
 
         //Token Refresh
@@ -74,6 +75,11 @@ export default {
             .then((refreshed) => {
               if (refreshed) {
                 console.info("Token refreshed" + refreshed);
+                this.saveUserData({
+                  token: this.keycloak.token,
+                  refreshToken: this.keycloak.refreshToken,
+                });
+                this.$api.setAuthToken(this.keycloak.token);
               } else {
                 console.warn(
                   "Token not refreshed, valid for " +
@@ -99,25 +105,6 @@ export default {
     ...mapMutations({
       saveUserData: "saveUserState",
     }),
-    async login() {
-      console.log(`LOGIN with ${this.username}, ${this.password}`);
-      let result = await axios.post(
-        `${process.env.VUE_APP_ENDPOINT_ACCOUNTS}/account/userLogon`,
-        `${this.username}#${this.password}`,
-        {
-          headers: {
-            "Content-Type": "text/plain",
-          },
-        }
-      );
-      if (result.status === 200 && result.data.success === true) {
-        console.log("LOGIN SUCCESS");
-        this.saveUserData(result.data.data);
-        this.$router.push("/dashboard");
-      } else {
-        console.log("LOGIN FAILED");
-      }
-    },
     signUp() {
       this.keycloak.login();
     },
