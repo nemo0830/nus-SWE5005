@@ -32,7 +32,7 @@ class APIProvider {
     });
   }
 
-  create(resource, data, query) {
+  post(resource, data, query) {
     return this.#http.post(resource, data, {
       params: query,
     });
