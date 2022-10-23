@@ -18,16 +18,8 @@ class APIProvider {
     this.#http.defaults.headers.common.Authorization = "";
   }
 
-  // REST Methods
   get(resource, query) {
-    console.log("resource is " + resource);
     return this.#http.get(resource, {
-      params: query,
-    });
-  }
-
-  getObject(resource, id, query) {
-    return this.#http.get(`${resource}/${id}`, {
       params: query,
     });
   }
@@ -38,15 +30,6 @@ class APIProvider {
     });
   }
 
-  update(resource, id, data, query) {
-    return this.#http.patch(`${resource}/${id}`, data, {
-      params: query,
-    });
-  }
-
-  destroy(resource, id) {
-    return this.#http.delete(`${resource}/${id}`);
-  }
 }
 
 export default new APIProvider({
