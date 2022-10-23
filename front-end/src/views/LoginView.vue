@@ -62,6 +62,7 @@ export default {
           this.saveUserData({
             token: this.keycloak.token,
             refreshToken: this.keycloak.refreshToken,
+            userId: -1,
           });
           this.email = this.keycloak.tokenParsed.email;
           this.$api.setAuthToken(this.keycloak.token);

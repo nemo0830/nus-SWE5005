@@ -29,7 +29,6 @@ class APIProvider {
       params: query,
     });
   }
-
 }
 
 export default new APIProvider({
