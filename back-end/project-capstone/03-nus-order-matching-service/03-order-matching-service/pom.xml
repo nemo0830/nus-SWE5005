@@ -19,7 +19,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <spring-cloud-gcp.version>3.2.1</spring-cloud-gcp.version>
         <spring-cloud.version>2021.0.1</spring-cloud.version>
-        <keycloak-adapter-bom.version>15.0.2</keycloak-adapter-bom.version>
+        <keycloak-adapter-bom.version>19.0.2</keycloak-adapter-bom.version>
     </properties>
 
     <dependencies>
