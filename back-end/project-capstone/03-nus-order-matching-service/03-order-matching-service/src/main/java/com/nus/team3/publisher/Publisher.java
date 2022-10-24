@@ -16,13 +16,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 import static com.nus.team3.dao.TransactionDao.*;
 
-// NOTE: CORS origins MUST be exact match!
-@CrossOrigin(origins = {"https://www.omni-trade.xyz","*"})
+
 @RestController
 @RequestMapping("/ordermatching")
 public class Publisher {
