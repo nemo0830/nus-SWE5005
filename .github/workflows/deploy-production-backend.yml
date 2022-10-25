@@ -29,7 +29,7 @@ jobs:
           ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
           " \
             cd $DEPLOY_DIRECTORY && \
-            docker compose up -d
+            sudo docker compose up -d
           "
           ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
           " \
@@ -47,7 +47,7 @@ jobs:
           ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
           " \
             cd $DEPLOY_DIRECTORY && \
-            docker compose up -d
+            sudo docker compose up -d
           "
 
       - name: Timestamping deployment
