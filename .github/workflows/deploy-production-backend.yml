@@ -43,7 +43,7 @@ jobs:
 
       - name: Deploy with rsync
         run: |
-          rsync -avzb ./ ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }}:$DEPLOY_DIRECTORY
+          rsync -avz ./ ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }}:$DEPLOY_DIRECTORY
 
       - name: Restore configuration
         run: |
