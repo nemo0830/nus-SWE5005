@@ -6,7 +6,7 @@ on:
       - devops/test
 
 env:
-  DEPLOY_DIRECTORY: /var/www/swe5005/deploy/frontend
+  DEPLOY_DIRECTORY: /var/www/swe5005
 
 jobs:
   deploy:
@@ -22,8 +22,29 @@ jobs:
 
       - name: Deploy with rsync
         run: |
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            docker compose up -d
+          "
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            mv docker-compose.yml docker-compose.yml.backup \
+            mv back-end/project-capstone/03-nus-order-matching-service/03-order-matching-service/src/main/resources/application-docker.yml application-docker.yml.backup
+          "
           rsync -avzb ./ ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }}:$DEPLOY_DIRECTORY
-
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            mv docker-compose.yml.backup docker-compose.yml \
+            mv application-docker.yml.backup back-end/project-capstone/03-nus-order-matching-service/03-order-matching-service/src/main/resources/application-docker.yml
+          "
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            docker compose up -d
+          "
       - name: Timestamping deployment
         run: |
           ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
