@@ -15,10 +15,6 @@ jobs:
       - name: Checkout
         uses: "actions/checkout@v3"
 
-      - name: Set AWS Crdentials
-        run: |
-          find ./back-end/ -name "*.yml" -exec sed -i "s@__AWS_ACCESS_KEY__@${{ secrets.AWS_ACCESS_KEY }}@g" {} +
-          find ./back-end/ -name "*.yml" -exec sed -i 's@__AWS_SECRET_KEY__@${{ secrets.AWS_SECRET_KEY }}@g' {} +
 
       - name: Deploy with rsync
         run: |
