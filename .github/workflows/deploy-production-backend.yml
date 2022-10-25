@@ -37,7 +37,7 @@ jobs:
           ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
           " \
             cd $DEPLOY_DIRECTORY && \
-            mv docker-compose.yml docker-compose.yml.backup \
+            mv docker-compose.yml docker-compose.yml.backup && \
             mv back-end/project-capstone/03-nus-order-matching-service/03-order-matching-service/src/main/resources/application-docker.yml application-docker.yml.backup
           "
 
@@ -50,7 +50,7 @@ jobs:
           ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
           " \
             cd $DEPLOY_DIRECTORY && \
-            mv docker-compose.yml.backup docker-compose.yml \
+            mv docker-compose.yml.backup docker-compose.yml && \
             mv application-docker.yml.backup back-end/project-capstone/03-nus-order-matching-service/03-order-matching-service/src/main/resources/application-docker.yml
           "
 
