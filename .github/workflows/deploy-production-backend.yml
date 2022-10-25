@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - production/backend
-      - devops/test
 
 env:
   DEPLOY_DIRECTORY: /var/www/swe5005
