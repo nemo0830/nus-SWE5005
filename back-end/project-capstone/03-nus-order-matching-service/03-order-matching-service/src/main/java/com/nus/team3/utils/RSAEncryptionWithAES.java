@@ -1,20 +1,25 @@
 package com.nus.team3.utils;
 
-import org.apache.commons.codec.digest.DigestUtils;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.nio.file.Files;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 // Java 8 example for RSA-AES encryption/decryption.
 // Uses strong encryption with 2048 key size.
@@ -23,17 +28,17 @@ public class RSAEncryptionWithAES {
     public static void main(String[] args) throws Exception {
 
         // Generate public and private keys using RSA
-//        Map<String, Object> keys = getRSAKeys();
-//        PrivateKey privateKey = (PrivateKey) keys.get("private");
-//        PublicKey publicKey = (PublicKey) keys.get("public");
+        // Map<String, Object> keys = getRSAKeys();
+        // PrivateKey privateKey = (PrivateKey) keys.get("private");
+        // PublicKey publicKey = (PublicKey) keys.get("public");
 
-// Save private key & public key
-//        try (FileOutputStream fos = new FileOutputStream("frontEndPublicKey")) {
-//            fos.write(publicKey.getEncoded());
-//        }
-//        try (FileOutputStream fos1 = new FileOutputStream("frontEndPivateKey")) {
-//            fos1.write(privateKey.getEncoded());
-//        }
+        // Save private key & public key
+        // try (FileOutputStream fos = new FileOutputStream("frontEndPublicKey")) {
+        // fos.write(publicKey.getEncoded());
+        // }
+        // try (FileOutputStream fos1 = new FileOutputStream("frontEndPivateKey")) {
+        // fos1.write(privateKey.getEncoded());
+        // }
 
         String plainText = "buy#MSFT#1#101.2#777";
         PublicKey backendPublicKey = getPublicKey();
@@ -41,7 +46,7 @@ public class RSAEncryptionWithAES {
 
         // MESSAGE CONFIDENTIALITY FLOW
         // First create an AES Key
-//        String secretAESKeyString = getSecretAESKeyAsString();
+        // String secretAESKeyString = getSecretAESKeyAsString();
         String secretAESKeyString = "2oilpo4azs1wZtnpiiAgHw==";
 
         // Encrypt our data with AES key
@@ -84,7 +89,8 @@ public class RSAEncryptionWithAES {
         String decryptedMessageDigest = decryptUsingPublicKey(encryptedMessageDigest, frontEndPublicKey);
         System.out.println("decryptedMessageDigest: " + decryptedMessageDigest);
 
-        System.out.println("sha256hexReceivedCalculated.equals(decryptedMessageDigest): " + sha256hexReceivedCalculated.equals(decryptedMessageDigest));
+        System.out.println("sha256hexReceivedCalculated.equals(decryptedMessageDigest): "
+                + sha256hexReceivedCalculated.equals(decryptedMessageDigest));
     }
 
     public static PublicKey getFrontEndPublicKey() throws Exception {
@@ -118,6 +124,12 @@ public class RSAEncryptionWithAES {
 
         File privateKeyFile = new File("KeyPair/privateKey");
         byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
+        KeyFactory keyFactory2 = KeyFactory.getInstance("RSA");
+        EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        return keyFactory2.generatePrivate(privateKeySpec);
+    }
+    
+    public static PrivateKey getPrivateKey(byte[] privateKeyBytes) throws Exception {
         KeyFactory keyFactory2 = KeyFactory.getInstance("RSA");
         EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
         return keyFactory2.generatePrivate(privateKeySpec);
@@ -196,5 +208,4 @@ public class RSAEncryptionWithAES {
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         return Base64.getEncoder().encodeToString(cipher.doFinal(message.getBytes()));
     }
-
 }
