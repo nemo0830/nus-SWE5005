@@ -102,6 +102,12 @@ public class RSAEncryptionWithAES {
         return keyFactory.generatePublic(publicKeySpec);
     }
 
+    public static PublicKey getFrontEndPublicKey(byte[] frontendKeyBytes) throws Exception {
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(frontendKeyBytes);
+        return keyFactory.generatePublic(publicKeySpec);
+    }
+
     public static PrivateKey getFrontEndPrivateKey() throws Exception {
 
         File privateKeyFile = new File("KeyPair/frontEndPrivateKey");
@@ -128,7 +134,7 @@ public class RSAEncryptionWithAES {
         EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
         return keyFactory2.generatePrivate(privateKeySpec);
     }
-    
+
     public static PrivateKey getPrivateKey(byte[] privateKeyBytes) throws Exception {
         KeyFactory keyFactory2 = KeyFactory.getInstance("RSA");
         EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
