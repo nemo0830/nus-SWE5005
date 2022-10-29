@@ -1,6 +1,10 @@
 package com.nus.team3.aop;
 
-import lombok.extern.slf4j.Slf4j;
+import java.security.PrivateKey;
+import java.util.Objects;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -8,10 +12,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Objects;
+import com.nus.team3.utils.RSAEncryptionWithAES;
+import com.nus.team3.utils.Utils;
 
-import static com.nus.team3.utils.RSAEncryptionWithAES.*;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Aspect
@@ -20,17 +24,23 @@ public class DecryptInterceptor {
 
     @Around(value = "@annotation(aesRsaDecrypt)", argNames = "proceedingJoinPoint, aesRsaDecrypt")
     private Object customizedTimeInterceptor(ProceedingJoinPoint proceedingJoinPoint,
-                                             AesRsaDecrypt aesRsaDecrypt) throws Throwable {
+            AesRsaDecrypt aesRsaDecrypt) throws Throwable {
         Object[] modifiedArgs = proceedingJoinPoint.getArgs();
         String encryptedText = (String) modifiedArgs[0];
 
         HttpServletRequest request = ((ServletRequestAttributes) Objects
                 .requireNonNull(RequestContextHolder
-                        .getRequestAttributes())).getRequest();
-        String encryptedAESKeyString = request.getHeader("aes-key");
-        String decryptedAESKeyString = decryptUsingPrivateKey(encryptedAESKeyString, getPrivateKey());
+                        .getRequestAttributes()))
+                .getRequest();
 
-        String decryptedText = decryptTextUsingAES(encryptedText, decryptedAESKeyString);
+        ClassLoader classLoader = getClass().getClassLoader();
+        byte[] fileBytes = Utils.getFileFromResourceAsStream(classLoader, "KeyPair/privateKey.der").readAllBytes();
+        PrivateKey privateKey = RSAEncryptionWithAES.getPrivateKey(fileBytes);
+
+        String encryptedAESKeyString = request.getHeader("aes-key");
+        String decryptedAESKeyString = RSAEncryptionWithAES.decryptUsingPrivateKey(encryptedAESKeyString, privateKey);
+
+        String decryptedText = RSAEncryptionWithAES.decryptTextUsingAES(encryptedText, decryptedAESKeyString);
 
         modifiedArgs[0] = decryptedText;
 

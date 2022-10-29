@@ -5,6 +5,7 @@ import com.nus.team3.dto.Order;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.util.Random;
 
 public class Utils {
@@ -51,5 +52,16 @@ public class Utils {
                 side.equalsIgnoreCase(TradeEnum.SIDE.SELL.name()))
                 && quantity > 0
                 && price > 0;
+    }
+
+    public static InputStream getFileFromResourceAsStream(ClassLoader loader, String fileName) {
+        InputStream inputStream = loader.getResourceAsStream(fileName);
+    
+        // the stream holding the file content
+        if (inputStream == null) {
+            throw new IllegalArgumentException("file not found! " + fileName);
+        } else {
+            return inputStream;
+        }
     }
 }
