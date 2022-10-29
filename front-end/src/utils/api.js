@@ -4,6 +4,7 @@ class APIProvider {
   #http = null;
   #serverkey = null;
   #clientKey = null;
+  #aesKey = null;
 
   constructor({ url }) {
     this.#http = axios.create({
@@ -13,19 +14,34 @@ class APIProvider {
 
     this.getServerPublicKey();
     this.getClientPrivateKey();
+    this.generateAesKey();
+  }
+
+  async generateAesKey() {
+    const bufferSize = 64;
+    const key = forge.random.getBytesSync(32);
+    const iv = forge.random.getBytesSync(32);
+    const cipher = forge.cipher.createCipher("AES-CBC", key);
+    cipher.start({ iv: iv });
+    cipher.update(forge.util.createBuffer(bufferSize));
+    cipher.finish();
+    const encrypted = cipher.output;
+
+    this.#aesKey = forge.util.encode64(encrypted.data);
+    console.log("AES key generated\n", this.#aesKey);
   }
 
   async getClientPrivateKey() {
-    const data = await fetch("static/frontEndPrivateKey", {
+    const data = await fetch("static/frontEndPrivateKey.pem", {
       method: "GET",
     });
     const keyData = await data.text();
     this.#clientKey = keyData;
-    console.log("Client private key downloaded: ", this.#clientKey);
+    console.log("Client private key downloaded\n", this.#clientKey);
   }
 
   async getServerPublicKey() {
-    const data = await fetch("static/matthew_public_key.pem", {
+    const data = await fetch("static/publicKey.pem", {
       method: "GET",
     });
     const pem = await data.text();
@@ -40,21 +56,50 @@ class APIProvider {
     // let reader = new FileReader();
     // await reader.readAsArrayBuffer(blobData);
     this.#serverkey = pem;
-    console.log("Server public key downloaded: ", this.#serverkey);
+    console.log("Server public key downloaded\n", this.#serverkey);
   }
 
-  async encryptData(data) {
+  signDataWithPrivateKey(data) {
+    const hashedData = this.hashData(data);
+    const privateKey = forge.pki.privateKeyFromPem(this.#clientKey);
+    const pss = forge.pss.create({
+      md: forge.md.sha1.create(),
+      mgf: forge.mgf.mgf1.create(forge.md.sha1.create()),
+      saltLength: 20,
+      // optionally pass 'prng' with a custom PRNG implementation
+      // optionalls pass 'salt' with a forge.util.ByteBuffer w/custom salt
+    });
+    const signed = privateKey.sign(hashedData, pss);
+
+    // console.log("privateKey", privateKey);
+    // console.log("data", data);
+    // console.log("signed string", forge.util.encode64(signed));
+
+    return forge.util.encode64(signed);
+  }
+
+  encryptDataWithPublicKey(data) {
     const publicKey = forge.pki.publicKeyFromPem(this.#serverkey);
     const encrypted = publicKey.encrypt(data, "RSA-OAEP", {
       md: forge.md.sha256.create(),
       mgf1: { md: forge.md.sha1.create() },
     });
 
-    console.log("publicKey is ", publicKey);
-    console.log("data is ", data);
-    console.log("encrypted string", forge.util.encode64(encrypted));
+    // console.log("publicKey", publicKey);
+    // console.log("data", data);
+    // console.log("encrypted string", forge.util.encode64(encrypted));
 
-    return encrypted;
+    return forge.util.encode64(encrypted);
+  }
+
+  hashData(data) {
+    const md = forge.md.sha256.create();
+    md.update(data);
+    //const hash = md.digest().toHex();
+
+    //console.log("hash", hash);
+
+    return md;
   }
 
   setAuthToken(token) {
@@ -78,19 +123,25 @@ class APIProvider {
   }
 
   async submitOrder({ side, ticker, amount, price, userId }) {
-    const payload = this.encryptData(
+    const payload = this.hashData(
       `${side}#${ticker}#${amount}#${price}#${userId}`
     );
+    const hashedPayload = this.signDataWithPrivateKey(payload);
+    const headers = {
+      headers: {
+        "Content-Type": "text/plain",
+        "aes-key": this.encryptDataWithPublicKey(this.#aesKey),
+        "encrypted-message-digest": hashedPayload,
+      },
+    };
+
+    console.log("[submitOrder] payload\n", hashedPayload);
+    console.log("[submitOrder] headers\n", headers);
+
     return this.#http.post(
       `${process.env.VUE_APP_ENDPOINT_ORDERS}/ordermatching/order`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "text/plain",
-          "aes-key": forge.util.encode64(this.#clientKey),
-          "encrypted-message-digest": "text/plain",
-        },
-      }
+      hashedPayload,
+      headers
     );
   }
 }
