@@ -164,12 +164,10 @@ public class RSAEncryptionWithAES {
 
     // Decrypt text using AES key
     public static String decryptTextUsingAES(String encryptedText, String aesKeyString) throws Exception {
-
         byte[] decodedKey = Base64.getDecoder().decode(aesKeyString);
         SecretKey originalKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
-
         // AES defaults to AES/ECB/PKCS5Padding in Java 7
-        Cipher aesCipher = Cipher.getInstance("AES");
+        Cipher aesCipher = Cipher.getInstance("AES/ECB/PKCS7Padding");
         aesCipher.init(Cipher.DECRYPT_MODE, originalKey);
         byte[] bytePlainText = aesCipher.doFinal(Base64.getDecoder().decode(encryptedText));
         return new String(bytePlainText);
@@ -190,14 +188,14 @@ public class RSAEncryptionWithAES {
     }
 
     public static String decryptUsingPrivateKey(String message, PrivateKey privateKey) throws Exception {
-        Cipher cipher = Cipher.getInstance("RSA");
+        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         return new String(cipher.doFinal(Base64.getDecoder().decode(message)));
     }
 
     // Decrypt AES Key using RSA public key
     public static String decryptUsingPublicKey(String message, PublicKey publicKey) throws Exception {
-        Cipher cipher = Cipher.getInstance("RSA");
+        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWITHSHA-256ANDMGF1PADDING");
         cipher.init(Cipher.DECRYPT_MODE, publicKey);
         return new String(cipher.doFinal(Base64.getDecoder().decode(message)));
     }

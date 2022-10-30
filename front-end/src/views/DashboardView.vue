@@ -124,32 +124,36 @@ export default {
       }
     },
     async submitOrder(side) {
-      let ticker = this.selectedStock.ticker;
-      let amount = this.selectedStock.amount;
-      let price = this.selectedStock.price;
-      let userId = this.$store.getters.userData.userId;
+      try {
+        let ticker = this.selectedStock.ticker;
+        let amount = this.selectedStock.amount;
+        let price = this.selectedStock.price;
+        let userId = this.$store.getters.userData.userId;
 
-      this.isLoading = true;
+        this.isLoading = true;
 
-      console.log(`[submitOrder] ${side} ${amount}x${ticker} @ ${price}...`);
+        console.log(`[submitOrder] ${side} ${amount}x${ticker} @ ${price}...`);
 
-      let tradeOrder = {
-        side: side,
-        ticker: ticker,
-        amount: amount,
-        price: price,
-        userId: userId,
-      };
+        let tradeOrder = {
+          side: side,
+          ticker: ticker,
+          amount: amount,
+          price: price,
+          userId: userId,
+        };
 
-      let result = await this.$api.submitOrder(tradeOrder);
+        let result = await this.$api.submitOrder(tradeOrder);
 
-      this.isLoading = false;
-      this.isTradeDialogVisible = false;
-
-      if (result.status === 200) {
-        return true;
-      } else {
-        return false;
+        if (result.status === 200) {
+          return true;
+        } else {
+          return false;
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.isLoading = false;
+        this.isTradeDialogVisible = false;
       }
     },
     openTradeDialog(side, stockData) {

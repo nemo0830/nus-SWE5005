@@ -12,23 +12,35 @@ class APIProvider {
       headers: { "Content-Type": "application/json" },
     });
 
+    this.#aesKey = "1234567890_1234567890_1234567890";
+
     this.getServerPublicKey();
     this.getClientPrivateKey();
-    this.generateAesKey();
+    // this.generateAesKey();
   }
 
-  async generateAesKey() {
-    const bufferSize = 64;
-    const key = forge.random.getBytesSync(32);
-    const iv = forge.random.getBytesSync(32);
-    const cipher = forge.cipher.createCipher("AES-CBC", key);
-    cipher.start({ iv: iv });
-    cipher.update(forge.util.createBuffer(bufferSize));
-    cipher.finish();
-    const encrypted = cipher.output;
+  encryptDataWithAesKey(data) {
+    //const bufferSize = 64;
+    try {
+      // const key = forge.random.getBytesSync(32);
+      const iv = forge.random.getBytesSync(32);
+      const cipher = forge.cipher.createCipher("AES-ECB", this.#aesKey);
 
-    this.#aesKey = forge.util.encode64(encrypted.data);
-    console.log("AES key generated\n", this.#aesKey);
+      cipher.start({ iv: iv });
+      cipher.update(forge.util.createBuffer("PAYLOAD"));
+      cipher.finish();
+
+      // const encrypted = cipher.output;
+      console.log("data", data);
+      const encoded = forge.util.encode64(cipher.output.data);
+      console.log("[encryptDataWithAesKey] Payload", cipher.output);
+      console.log("[encryptDataWithAesKey] Encrypted payload", encoded);
+
+      return encoded;
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
   }
 
   async getClientPrivateKey() {
@@ -123,24 +135,30 @@ class APIProvider {
   }
 
   async submitOrder({ side, ticker, amount, price, userId }) {
-    const payload = this.hashData(
-      `${side}#${ticker}#${amount}#${price}#${userId}`
+    // const payload = this.hashData(
+    //   `${side}#${ticker}#${amount}#${price}#${userId}`
+    // );
+    const payload = this.encryptDataWithAesKey(
+      this.hashData(`${side}#${ticker}#${amount}#${price}#${userId}`)
     );
     const hashedPayload = this.signDataWithPrivateKey(payload);
+    const encodedAesKey = this.encryptDataWithPublicKey(
+      forge.util.encode64(this.#aesKey)
+    );
     const headers = {
       headers: {
         "Content-Type": "text/plain",
-        "aes-key": this.encryptDataWithPublicKey(this.#aesKey),
+        "aes-key": encodedAesKey,
         "encrypted-message-digest": hashedPayload,
       },
     };
 
-    console.log("[submitOrder] payload\n", hashedPayload);
+    console.log("[submitOrder] payload\n", payload);
     console.log("[submitOrder] headers\n", headers);
 
     return this.#http.post(
       `${process.env.VUE_APP_ENDPOINT_ORDERS}/ordermatching/order`,
-      hashedPayload,
+      payload,
       headers
     );
   }
