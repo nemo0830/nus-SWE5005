@@ -123,6 +123,16 @@ class APIProvider {
   }
 
   async submitOrder({ side, ticker, amount, price, userId }) {
+    return this.#http.post(
+      `${process.env.VUE_APP_ENDPOINT_ORDERS}/ordermatching/order`,
+      `${side}#${ticker}#${amount}#${price}#${userId}`,
+      {
+        headers: { "Content-Type": "text/plain" },
+      }
+    );
+  }
+
+  async submitOrderSecure({ side, ticker, amount, price, userId }) {
     const payload = this.hashData(
       `${side}#${ticker}#${amount}#${price}#${userId}`
     );
