@@ -22,11 +22,7 @@
                 <v-list-item-title>Home</v-list-item-title>
               </v-list-item>
             </router-link>
-            <router-link
-              v-if="!isLoggedIn"
-              :to="accountPath"
-              class="text-decoration-none"
-            >
+            <router-link :to="accountPath" class="text-decoration-none">
               <v-list-item>
                 <v-list-item-icon>
                   <v-icon>mdi-account</v-icon>
@@ -34,16 +30,24 @@
                 <v-list-item-title>Account</v-list-item-title>
               </v-list-item>
             </router-link>
+            <!-- <router-link to="/account" class="text-decoration-none">
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon>mdi-book-open-variant</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title>Order Book</v-list-item-title>
+              </v-list-item>
+            </router-link> -->
             <router-link
               v-if="isLoggedIn"
-              to="/orderbook"
+              to="/dashboard"
               class="text-decoration-none"
             >
               <v-list-item>
                 <v-list-item-icon>
                   <v-icon>mdi-book-open-variant</v-icon>
                 </v-list-item-icon>
-                <v-list-item-title>Order Book</v-list-item-title>
+                <v-list-item-title>Buy / Sell</v-list-item-title>
               </v-list-item>
             </router-link>
             <router-link to="/about" class="text-decoration-none">
@@ -70,14 +74,14 @@ export default {
   computed: {
     homePath() {
       if (this.$store.getters.isLoggedIn) {
-        return "/dashboard";
+        return "/";
       } else {
         return "/";
       }
     },
     accountPath() {
       if (this.$store.getters.isLoggedIn) {
-        return "/account";
+        return "/login";
       } else {
         return "/login";
       }

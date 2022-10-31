@@ -108,6 +108,7 @@ export default {
     async getStocksList() {
       let result = await this.$api.get(
         `${process.env.VUE_APP_ENDPOINT_ORDERS}/api/stocklive`
+        // `https://orders.omni-trade.xyz/api/stocklive`
       );
       if (result.status === 200) {
         this.stocksList = result.data.data;
@@ -124,32 +125,65 @@ export default {
       }
     },
     async submitOrder(side) {
-      let ticker = this.selectedStock.ticker;
-      let amount = this.selectedStock.amount;
-      let price = this.selectedStock.price;
-      let userId = this.$store.getters.userData.userId;
+      try {
+        var validation = {
+          isNumber: function (str) {
+            var pattern = /^\d+\.?\d*$/;
+            return pattern.test(str); // returns a boolean
+          },
+        };
 
-      this.isLoading = true;
+        let ticker = this.selectedStock.ticker;
+        let amount = this.selectedStock.amount;
+        let price = this.selectedStock.price;
+        let userId = this.$store.getters.userData.userId;
+        if (amount == "") {
+          window.alert("amount is empty");
+          return;
+        }
+        if (!validation.isNumber(amount)) {
+          window.alert("amount format is invalid");
+          return;
+        }
+        if (price == "") {
+          window.alert("price is empty");
+          return;
+        }
+        if (!validation.isNumber(price)) {
+          window.alert("price format is invalid");
+          return;
+        }
 
-      console.log(`[submitOrder] ${side} ${amount}x${ticker} @ ${price}...`);
+        this.isLoading = true;
 
-      let tradeOrder = {
-        side: side,
-        ticker: ticker,
-        amount: amount,
-        price: price,
-        userId: userId,
-      };
+        console.log(`[submitOrder] ${side} ${amount}x${ticker} @ ${price}...`);
 
-      let result = await this.$api.submitOrder(tradeOrder);
+        let tradeOrder = {
+          side: side,
+          ticker: ticker,
+          amount: amount,
+          price: price,
+          userId: userId,
+        };
 
-      this.isLoading = false;
-      this.isTradeDialogVisible = false;
+        let result = await this.$api.submitOrder(tradeOrder);
 
-      if (result.status === 200) {
+        this.isLoading = false;
+        this.isTradeDialogVisible = false;
+        if (result.status === 200) {
+          console.log(result);
+          window.alert("order placed successfully.");
+          return true;
+        } else {
+          console.log(result);
+          window.alert("error: you are not authorized to perform this action");
+          return false;
+        }
+      } catch (e) {
+        console.log(e);
+        window.alert("error: you are not authorized to perform this action.");
+        this.isLoading = false;
         return true;
-      } else {
-        return false;
       }
     },
     openTradeDialog(side, stockData) {
