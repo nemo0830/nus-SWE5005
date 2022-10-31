@@ -129,6 +129,7 @@ export default {
       this.keycloak.login();
     },
     logOut() {
+      this.saveUserData(null);
       this.keycloak.logout();
     },
   },
