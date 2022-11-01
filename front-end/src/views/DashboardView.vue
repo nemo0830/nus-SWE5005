@@ -166,7 +166,7 @@ export default {
           userId: userId,
         };
 
-        let result = await this.$api.submitOrder(tradeOrder);
+        let result = await this.$api.submitOrderSecure(tradeOrder);
 
         this.isLoading = false;
         this.isTradeDialogVisible = false;

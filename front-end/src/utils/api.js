@@ -27,13 +27,13 @@ class APIProvider {
       const cipher = forge.cipher.createCipher("AES-ECB", this.#aesKey);
 
       cipher.start({ iv: iv });
-      cipher.update(forge.util.createBuffer("PAYLOAD"));
+      cipher.update(forge.util.createBuffer(data));
       cipher.finish();
 
+      console.log("[encryptDataWithAesKey] Input data", data);
       // const encrypted = cipher.output;
-      console.log("data", data);
       const encoded = forge.util.encode64(cipher.output.data);
-      console.log("[encryptDataWithAesKey] Payload", cipher.output);
+      // console.log("[encryptDataWithAesKey] Payload", cipher.output);
       console.log("[encryptDataWithAesKey] Encrypted payload", encoded);
 
       return encoded;
@@ -72,16 +72,17 @@ class APIProvider {
   }
 
   signDataWithPrivateKey(data) {
-    const hashedData = this.hashData(data);
     const privateKey = forge.pki.privateKeyFromPem(this.#clientKey);
-    const pss = forge.pss.create({
-      md: forge.md.sha1.create(),
-      mgf: forge.mgf.mgf1.create(forge.md.sha1.create()),
-      saltLength: 20,
-      // optionally pass 'prng' with a custom PRNG implementation
-      // optionalls pass 'salt' with a forge.util.ByteBuffer w/custom salt
-    });
-    const signed = privateKey.sign(hashedData, pss);
+    // const pss = forge.pss.create({
+    //   md: forge.md.sha1.create(),
+    //   mgf: forge.mgf.mgf1.create(forge.md.sha1.create()),
+    //   saltLength: 20,
+    // optionally pass 'prng' with a custom PRNG implementation
+    // optionalls pass 'salt' with a forge.util.ByteBuffer w/custom salt
+    // });
+    const md = forge.md.sha256.create();
+    md.update(data);
+    const signed = privateKey.sign(md);
 
     // console.log("privateKey", privateKey);
     // console.log("data", data);
@@ -107,11 +108,11 @@ class APIProvider {
   hashData(data) {
     const md = forge.md.sha256.create();
     md.update(data);
-    //const hash = md.digest().toHex();
+    const hash = md.digest().getBytes();
 
-    //console.log("hash", hash);
+    console.log("[hashData] encoded data is ", forge.util.encode64(hash));
 
-    return md;
+    return forge.util.encode64(hash);
   }
 
   setAuthToken(token) {
@@ -145,27 +146,29 @@ class APIProvider {
   }
 
   async submitOrderSecure({ side, ticker, amount, price, userId }) {
-    const payload = this.hashData(
-      `${side}#${ticker}#${amount}#${price}#${userId}`
-    );
-    const hashedPayload = this.signDataWithPrivateKey(payload);
-    const encodedAesKey = this.encryptDataWithPublicKey(
+    const payload = `${side}#${ticker}#${amount}#${price}#${userId}`;
+    const hashedPayload = this.hashData(payload);
+    const encryptedPayload = this.encryptDataWithAesKey(payload);
+    const encryptionKey = this.encryptDataWithPublicKey(
       forge.util.encode64(this.#aesKey)
     );
+
+    console.log("hashedPayload is ", hashedPayload);
+    //console.log("signedPayload is ", signedPayload);
+
     const headers = {
       headers: {
         "Content-Type": "text/plain",
-        "aes-key": encodedAesKey,
-        "encrypted-message-digest": hashedPayload,
+        "aes-key": encryptionKey,
+        "encrypted-message-digest": this.signDataWithPrivateKey(payload),
       },
     };
 
-    console.log("[submitOrder] payload\n", payload);
-    console.log("[submitOrder] headers\n", headers);
+    console.log("[submitOrderSecure] headers\n", headers);
 
     return this.#http.post(
-      `${process.env.VUE_APP_ENDPOINT_ORDERS}/ordermatching/order`,
-      payload,
+      `${process.env.VUE_APP_ENDPOINT_ORDERS}/ordermatching/secure/order`,
+      encryptedPayload,
       headers
     );
   }
