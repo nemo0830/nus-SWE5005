@@ -48,10 +48,37 @@ public class Publisher {
 		return "End point test successful ";
 	}
 
-	@DigitalSignature
-	@AesRsaDecrypt
 	@PostMapping("/order")
 	public SendMessageResult sendOrder(@RequestBody String messageBody) {
+		try {
+			logger.info("received " + messageBody);
+
+			String[] messageBodyList = messageBody.split("#");
+			if (messageBodyList.length != 5 ||
+					(!messageBodyList[0].equalsIgnoreCase(TradeEnum.SIDE.BUY.name()) &&
+							!messageBodyList[0].equalsIgnoreCase(TradeEnum.SIDE.SELL.name()))) {
+				logger.info("Unrecognized order message {}, please make sure message is in format: buy/sell#stockName#quantity#price", messageBody);
+				return null;
+			}
+			String side = messageBodyList[0];
+			SendMessageRequest messageRequest = new SendMessageRequest()
+					.withQueueUrl(side.equalsIgnoreCase(TradeEnum.SIDE.BUY.name())? buyQueueEndPoint : sellQueueEndPoint)
+					.withMessageBody(messageBody);
+			messageRequest.setMessageGroupId(side);
+			messageRequest.setMessageDeduplicationId(String.valueOf(System.currentTimeMillis()));
+			SendMessageResult response = amazonSQSAsync.sendMessage(messageRequest);
+			logger.info("Message {} sent successfully to {} queue", messageBody, side);
+			return response;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@DigitalSignature
+	@AesRsaDecrypt
+	@PostMapping("/secure/order")
+	public SendMessageResult sendOrderSecure(@RequestBody String messageBody) {
 		try {
 			logger.info("received " + messageBody);
 

@@ -108,6 +108,7 @@ export default {
     async getStocksList() {
       let result = await this.$api.get(
         `${process.env.VUE_APP_ENDPOINT_ORDERS}/api/stocklive`
+        // `https://orders.omni-trade.xyz/api/stocklive`
       );
       if (result.status === 200) {
         this.stocksList = result.data.data;
@@ -125,10 +126,33 @@ export default {
     },
     async submitOrder(side) {
       try {
+        var validation = {
+          isNumber: function (str) {
+            var pattern = /^\d+\.?\d*$/;
+            return pattern.test(str); // returns a boolean
+          },
+        };
+
         let ticker = this.selectedStock.ticker;
         let amount = this.selectedStock.amount;
         let price = this.selectedStock.price;
         let userId = this.$store.getters.userData.userId;
+        if (amount == "") {
+          window.alert("amount is empty");
+          return;
+        }
+        if (!validation.isNumber(amount)) {
+          window.alert("amount format is invalid");
+          return;
+        }
+        if (price == "") {
+          window.alert("price is empty");
+          return;
+        }
+        if (!validation.isNumber(price)) {
+          window.alert("price format is invalid");
+          return;
+        }
 
         this.isLoading = true;
 
@@ -144,16 +168,22 @@ export default {
 
         let result = await this.$api.submitOrder(tradeOrder);
 
+        this.isLoading = false;
+        this.isTradeDialogVisible = false;
         if (result.status === 200) {
+          console.log(result);
+          window.alert("order placed successfully.");
           return true;
         } else {
+          console.log(result);
+          window.alert("error: you are not authorized to perform this action");
           return false;
         }
       } catch (e) {
-        console.error(e);
-      } finally {
+        console.log(e);
+        window.alert("error: you are not authorized to perform this action.");
         this.isLoading = false;
-        this.isTradeDialogVisible = false;
+        return true;
       }
     },
     openTradeDialog(side, stockData) {

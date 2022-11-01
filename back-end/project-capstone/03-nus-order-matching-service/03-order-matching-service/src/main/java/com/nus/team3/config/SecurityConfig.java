@@ -50,6 +50,7 @@ class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/stocklive").permitAll()
-                .antMatchers("/ordermatching/**").hasRole("user_actions").anyRequest().permitAll();
+                .antMatchers("/ordermatching/**").hasRole("user_actions")
+                .antMatchers("/transaction/**").hasRole("admin_actions").anyRequest().permitAll();
     }
 }

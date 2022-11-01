@@ -12,8 +12,21 @@
                 <h3>Please sign in</h3>
               </template>
               <br />
-              <v-btn color="cyan accent-4" dark @click="signUp"
+              <v-btn
+                color="cyan accent-4"
+                dark
+                @click="signUp"
+                v-if="!isLoggedIn"
                 >Login / Sign Up</v-btn
+              >
+              <br />
+              <br />
+              <v-btn
+                color="cyan accent-4"
+                dark
+                @click="logOut"
+                v-if="isLoggedIn"
+                >Log out</v-btn
               >
             </v-col>
           </v-card-actions>
@@ -30,6 +43,11 @@ import Keycloak from "keycloak-js";
 export default {
   name: "LoginView",
   components: {},
+  computed: {
+    isLoggedIn() {
+      return this.$store.getters.isLoggedIn;
+    },
+  },
   data() {
     return {
       email: null,
@@ -62,11 +80,12 @@ export default {
           this.saveUserData({
             token: this.keycloak.token,
             refreshToken: this.keycloak.refreshToken,
-            userId: -1,
+            userId: this.keycloak.subject,
           });
-          this.email = this.keycloak.tokenParsed.email;
+          // this.email = this.keycloak.tokenParsed.email;
+          this.email = `${this.keycloak.tokenParsed.preferred_username} (${this.keycloak.tokenParsed.email})`;
           this.$api.setAuthToken(this.keycloak.token);
-          this.$router.push("/dashboard");
+          // this.$router.push("/dashboard");
         }
 
         //Token Refresh
@@ -108,6 +127,10 @@ export default {
     }),
     signUp() {
       this.keycloak.login();
+    },
+    logOut() {
+      this.saveUserData(null);
+      this.keycloak.logout();
     },
   },
 };
