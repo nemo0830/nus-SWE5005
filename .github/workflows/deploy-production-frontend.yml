@@ -4,33 +4,57 @@ on:
     branches:
       - production/frontend
 
+env:
+  DEPLOY_DIRECTORY: /var/www/swe5005/deploy/frontend
+
 jobs:
-  deploy:
-    permissions:
-      contents: "read"
-      id-token: "write"
-
-    runs-on: "ubuntu-latest"
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: "actions/checkout@v3"
-
-      - name: Install Firebase CLI
-        run: |
-          curl -sL https://firebase.tools | bash
-
-      - name: Set RUNNER_READY env var to true
-        run: echo "RUNNER_READY=true" >> "$GITHUB_ENV"
-
-      - name: Build project
-        if: env.RUNNER_READY == 'true'
+      - name: Clone repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
         run: |
           cd front-end
           npm install
-          npm run build
-
-      - name: Deploy Frontend to Firebase Hosting
-        if: env.RUNNER_READY == 'true'
+      - name: Generate build
         run: |
           cd front-end
-          firebase deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}" --project kianming1988
+          npm run build
+      - name: Share artifact inside workflow
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-deploy
+          path: front-end/dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: production-deploy
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          known_hosts: "just-a-placeholder-so-we-dont-get-errors"
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }} >> ~/.ssh/known_hosts
+      - name: Deploy with rsync
+        run: |
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }} \
+          " \
+            sudo mkdir -p $DEPLOY_DIRECTORY && \
+            sudo mkdir -p $DEPLOY_DIRECTORY/../backup/frontend/${{ github.sha }} && \
+            sudo chown -R 1001:1001 $DEPLOY_DIRECTORY/../ && \
+            sudo chmod 775 -R $DEPLOY_DIRECTORY/../ \
+          "
+          rsync -avzb --backup-dir=$DEPLOY_DIRECTORY/../backup/frontend/${{ github.sha }} --delete ./ ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }}:$DEPLOY_DIRECTORY
+      - name: Timestamping deployment
+        run: |
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_REVERSE_PROXY_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            echo "Commit ${{ github.sha }} deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt \
+          "

@@ -4,58 +4,67 @@ on:
     branches:
       - production/backend
 
+env:
+  DEPLOY_DIRECTORY: /var/www/swe5005
+
 jobs:
   deploy:
-    permissions:
-      contents: "read"
-      id-token: "write"
-
-    # NOTE Maven and GCloud SDK CLI are pre-installed on Github-hosted runners
-    # See https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software for details
     runs-on: "ubuntu-latest"
     steps:
       - name: Checkout
         uses: "actions/checkout@v3"
 
-      - name: Build & Install Maven artifacts
-        run: "mvn -f ./back-end/project-capstone/pom.xml -B --no-transfer-progress -Dmaven.test.skip=true install"
-
-      - name: Decode service account file
-        env:
-          GCP_KEYFILE: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_GPG_PASSPHRASE }}
-        run: "echo $GCP_KEYFILE | gpg --batch --yes --passphrase-fd 0 --output google_application_credentials.json -d kianming1988-829d213afa53.json.gpg"
-
-      - name: Authorize gcloud CLI with service account
-        run: "gcloud auth activate-service-account github-actions@kianming1988.iam.gserviceaccount.com --key-file=google_application_credentials.json --project=kianming1988"
-
-      - name: Configure settings.xml
-        uses: whelk-io/maven-settings-xml-action@v20
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
         with:
-          plugin_groups: >
-            [
-              "com.google.cloud.tools"
-            ]
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          known_hosts: "just-a-placeholder-so-we-dont-get-errors"
 
-      - name: Set AWS Crdentials
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.PRODUCTION_APP_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Stand down Docker container
         run: |
-          find ./back-end/ -name "*.yml" -exec sed -i "s@__AWS_ACCESS_KEY__@${{ secrets.AWS_ACCESS_KEY }}@g" {} +
-          find ./back-end/ -name "*.yml" -exec sed -i 's@__AWS_SECRET_KEY__@${{ secrets.AWS_SECRET_KEY }}@g' {} +
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            sudo docker compose down
+          "
 
-      - name: Set RUNNER_READY env var to true 
-        run: echo "RUNNER_READY=true" >> "$GITHUB_ENV"
+      - name: Backup configuration
+        run: |
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            mv docker-compose.yml docker-compose.yml.backup && \
+            mv back-end/project-capstone/03-nus-order-matching-service/03-order-matching-service/src/main/resources/application-docker.yml application-docker.yml.backup
+          "
 
-      - name: Deploy Accounts Service to App Engine
-        if: env.RUNNER_READY == 'true'
-        run: "mvn -f ./back-end/project-capstone/02-nus-account-mgt-service/02-account-mgt-service/pom.xml --no-transfer-progress -Dapp_version=commit-${GITHUB_SHA::7} clean package appengine:deploy "
+      - name: Deploy with rsync
+        run: |
+          rsync -avz ./ ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }}:$DEPLOY_DIRECTORY
 
-      - name: Deploy Order Matching Service to App Engine
-        if: env.RUNNER_READY == 'true'
-        run: "mvn -f ./back-end/project-capstone/03-nus-order-matching-service/03-order-matching-service/pom.xml --no-transfer-progress -Dapp_version=commit-${GITHUB_SHA::7} -Pcloud-gcp clean package appengine:deploy"
+      - name: Restore configuration
+        run: |
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            mv docker-compose.yml.backup docker-compose.yml && \
+            mv application-docker.yml.backup back-end/project-capstone/03-nus-order-matching-service/03-order-matching-service/src/main/resources/application-docker.yml
+          "
 
-      - name: Deploy Forums Service to App Engine
-        if: env.RUNNER_READY == 'true'
-        run: "mvn -f ./back-end/project-capstone/05-forums/pom.xml --no-transfer-progress -Dapp_version=commit-${GITHUB_SHA::7} clean package appengine:deploy"
+      - name: Stand up Docker container
+        run: |
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            sudo docker compose up -d
+          "
 
-      - name: Deploy routing and dispatch config to App Engine
-        if: env.RUNNER_READY == 'true'
-        run: "gcloud app deploy --quiet dispatch.yaml"
+      - name: Timestamping deployment
+        run: |
+          ssh ${{ secrets.PRODUCTION_SSH_USERNAME }}@${{ secrets.PRODUCTION_APP_HOST }} \
+          " \
+            cd $DEPLOY_DIRECTORY && \
+            echo "Commit ${{ github.sha }} deployed at $(TZ=":Asia/Singapore" date)" > deployment_info.txt \
+          "

@@ -7,12 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
-// NOTE: CORS origins MUST be exact match!
-@CrossOrigin(origins = {"https://www.omni-trade.xyz","*"})
+
 @RestController
 @RequestMapping("/transaction")
 public class TransactionDao {

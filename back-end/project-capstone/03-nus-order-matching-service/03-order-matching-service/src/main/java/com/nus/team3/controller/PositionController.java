@@ -14,11 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-// NOTE: CORS origins MUST be exact match!
-@CrossOrigin(origins = {"https://www.omni-trade.xyz","*"})
+
 @Tag(name = "PositionController", description = "PositionController")
 @Slf4j
 @RestController

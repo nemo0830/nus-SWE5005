@@ -5,17 +5,28 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.Id;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Order implements Comparable<Order>{
     private String buyOrSell;
     private String transactionId;
     private String transactionIdAfterMatch;
     private String stockTicker;
-    private int user;
+    private String user;
     private long timestamp;
     private float price;
     private int quantity;
@@ -25,7 +36,7 @@ public class Order implements Comparable<Order>{
         this.buyOrSell = buyOrSell;
         this.transactionId = transactionId;
         this.stockTicker = stockTicker;
-        this.user = Integer.parseInt(user);
+        this.user = user;
         this.timestamp = timestamp;
         this.price = price;
         this.quantity = quantity;
@@ -69,7 +80,7 @@ public class Order implements Comparable<Order>{
         return stockTicker;
     }
 
-    public int getUser() {
+    public String getUser() {
         return user;
     }
 
@@ -105,4 +116,16 @@ public class Order implements Comparable<Order>{
     public void setPrice(float price) {
         this.price = price;
     }
+
+    @CreatedBy
+    @Column(nullable = false, updatable = false)
+    private String createdBy;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime created;
+
+    @Id
+    @Column(name="id",unique=true,nullable=false)
+    private Long id;
 }

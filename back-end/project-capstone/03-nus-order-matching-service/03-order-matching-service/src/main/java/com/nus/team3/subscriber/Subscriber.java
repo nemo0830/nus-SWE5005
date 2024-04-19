@@ -8,12 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.aws.messaging.config.annotation.EnableSqs;
 import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.stereotype.Component;
 
 import static com.nus.team3.utils.Utils.constructOrder;
 
 @Component
+@EnableSqs
 public class Subscriber {
 
 	private static final Logger logger = LoggerFactory.getLogger(Subscriber.class);
@@ -30,6 +32,7 @@ public class Subscriber {
 		logger.info("Message {} Received from order_matching_buyer_queue.fifo", message);
 		Order order = constructOrder(message);
 		if (order != null){
+			logger.info("AUDIT: created_by: [{}], created_at: [{}]", order.getUser(), order.getTimestamp());
 			sqlSessionTemplate.insert(TransactionDao.rootMapperPath + TransactionDao.saveTxnQuery, order);
 			logger.info("Buy order {} successfully persisted to db, proceed to matching.", order.getTransactionId());
 			orderMatchingController.processOrder(order);
@@ -41,6 +44,7 @@ public class Subscriber {
 		logger.info("Message {} Received from order_matching_seller_queue.fifo", message);
 		Order order = constructOrder(message);
 		if (order != null){
+			logger.info("AUDIT: created_by: [{}], created_at: [{}]", order.getUser(), order.getTimestamp());
 			sqlSessionTemplate.insert(TransactionDao.rootMapperPath + TransactionDao.saveTxnQuery, order);
 			logger.info("Sell order {} successfully persisted to db, proceed to matching.", order.getTransactionId());
 			orderMatchingController.processOrder(order);

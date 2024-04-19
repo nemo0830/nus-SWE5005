@@ -1,8 +1,0 @@
-dispatch:
-  # Default service serves simple hostname request.
-  - url: "accounts.omni-trade.xyz/*"
-    service: accounts
-  - url: "forums.omni-trade.xyz/*"
-    service: forums
-  - url: "orders.omni-trade.xyz/*"
-    service: orders

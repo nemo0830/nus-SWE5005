@@ -9,6 +9,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class SQSConfig {
@@ -25,6 +26,7 @@ public class SQSConfig {
 	private String serviceEndpoint;
 
 	@Bean
+	@Primary
 	public AmazonSQSAsync amazonSQSAsync() {
 		BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
 		EndpointConfiguration endpointConfiguration = new AmazonSQSAsyncClientBuilder.EndpointConfiguration(

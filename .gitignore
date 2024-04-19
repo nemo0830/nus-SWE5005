@@ -1,3 +1,4 @@
 .idea
 docker/volumes/mysql/data
 docker/volumes/postgres/data/
+.maven-repository
